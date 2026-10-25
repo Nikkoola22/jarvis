@@ -108,9 +108,17 @@
     .hal-eye-active {
       animation: hal-breathe 4s infinite ease-in-out;
     }
+
+    /* Mobile & Touch Optimizations */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    button, input, select, a {
+      -webkit-tap-highlight-color: transparent;
+    }
   </style>
 </head>
-<body class="min-h-screen relative flex flex-col justify-between p-3 sm:p-4 md:p-6 overflow-x-hidden overflow-y-auto">
+<body class="min-h-[100dvh] relative flex flex-col justify-between px-3 sm:px-4 md:px-6 pt-[max(0.5rem,env(safe-area-inset-top))] pb-[max(0.5rem,env(safe-area-inset-bottom))] overflow-x-hidden overflow-y-auto">
 
   <!-- Background Ambience -->
   <div class="fixed inset-0 cyber-grid z-0 pointer-events-none"></div>
@@ -118,66 +126,66 @@
   <div class="fixed inset-0 scanlines z-0 pointer-events-none"></div>
 
   <!-- Top Navigation & Telemetry HUD -->
-  <header class="relative z-30 max-w-6xl w-full mx-auto flex flex-wrap items-center justify-between gap-4 border-b border-rose-500/20 pb-4">
-    <div class="flex items-center gap-3">
+  <header class="relative z-30 max-w-6xl w-full mx-auto flex items-center justify-between gap-2 border-b border-rose-500/20 pb-3 pt-1">
+    <div class="flex items-center gap-2 sm:gap-3 shrink-0">
       <div class="relative flex items-center justify-center">
-        <div class="w-4 h-4 rounded-full bg-rose-500 animate-ping absolute"></div>
-        <div class="w-4 h-4 rounded-full bg-rose-600 shadow-[0_0_15px_#f43f5e] border border-rose-300/40"></div>
+        <div class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-rose-500 animate-ping absolute"></div>
+        <div class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-rose-600 shadow-[0_0_15px_#f43f5e] border border-rose-300/40"></div>
       </div>
       <div>
-        <div class="flex items-center gap-2">
-          <span class="font-hal font-black tracking-widest text-lg text-rose-500 uppercase">HAL 9000</span>
-          <span class="text-[10px] px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-300 border border-rose-500/30 font-hud tracking-wider">DISCOVERY ONE</span>
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <span class="font-hal font-black tracking-widest text-base sm:text-lg text-rose-500 uppercase">HAL 9000</span>
+          <span class="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-300 border border-rose-500/30 font-hud tracking-wider">DISCOVERY</span>
         </div>
-        <div class="text-[10px] font-hud text-slate-400 tracking-wider">HEURISTICALLY PROGRAMMED ALGORITHMIC COMPUTER</div>
+        <div class="text-[9px] font-hud text-slate-400 tracking-wider hidden sm:block">HEURISTICALLY PROGRAMMED ALGORITHMIC COMPUTER</div>
       </div>
     </div>
 
     <!-- Live Telemetry, Mac Bridge & Config Badges -->
-    <div class="flex items-center gap-2 text-xs font-hud">
+    <div class="flex items-center gap-1 sm:gap-1.5 text-xs font-hud">
       <!-- Mac Link Status Pill -->
-      <div id="badgeMacLink" onclick="toggleConfigModal()" class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer text-slate-400 hover:border-rose-500/40 transition-all" title="Liaison Mac Local — Cliquez pour configurer">
+      <div id="badgeMacLink" onclick="toggleConfigModal()" class="holo-card px-2 sm:px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer text-slate-400 hover:border-rose-500/40 transition-all active:scale-95" title="Liaison Mac Local — Cliquez pour configurer">
         <span id="macLed" class="w-2 h-2 rounded-full bg-slate-500 transition-colors"></span>
-        <strong id="macLabel" class="text-slate-400 tracking-wide text-[10px]">MAC HORS LIGNE</strong>
+        <strong id="macLabel" class="text-slate-400 tracking-wide text-[10px]">MAC</strong>
       </div>
 
-      <div class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 hidden sm:flex">
+      <div class="holo-card px-2.5 py-1.5 rounded-xl items-center gap-1.5 hidden md:flex">
         <span class="text-slate-400">RÉSEAU</span>
         <strong id="badgeRegion" class="text-rose-300 tracking-wide">Vercel Edge</strong>
       </div>
 
-      <div class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5">
+      <div class="holo-card px-2 py-1.5 rounded-xl items-center gap-1.5 hidden lg:flex">
         <span class="text-slate-400">CERVEAU</span>
-        <strong id="badgeModel" class="text-amber-400 tracking-wide">Z.ai GLM-4-PLUS</strong>
+        <strong id="badgeModel" class="text-amber-400 tracking-wide text-[11px]">Z.ai GLM-4-PLUS</strong>
       </div>
 
       <!-- Live Screen Monitor Button -->
-      <button onclick="toggleScreenMonitor()" id="screenToggleBtn" class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 text-rose-300 hover:text-white hover:border-rose-400 transition-all cursor-pointer" title="Afficher et contrôler l'écran du Mac en direct">
-        <span>🖥️</span>
-        <span class="hidden md:inline font-hud">ÉCRAN MAC</span>
+      <button onclick="toggleScreenMonitor()" id="screenToggleBtn" class="holo-card w-9 h-9 sm:w-auto sm:h-auto px-2 sm:px-2.5 py-1.5 rounded-xl flex items-center justify-center gap-1.5 text-rose-300 hover:text-white hover:border-rose-400 transition-all cursor-pointer active:scale-95" title="Afficher et contrôler l'écran du Mac en direct">
+        <span class="text-sm">🖥️</span>
+        <span class="hidden md:inline font-hud">ÉCRAN</span>
       </button>
 
       <!-- Interactive Cyber Terminal Button -->
-      <button onclick="toggleTerminalModal()" id="terminalToggleBtn" class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 text-emerald-400 hover:text-white hover:border-emerald-400 transition-all cursor-pointer font-hud" title="Ouvrir le Terminal macOS interactif">
-        <span>📟</span>
-        <span class="hidden md:inline">TERMINAL</span>
+      <button onclick="toggleTerminalModal()" id="terminalToggleBtn" class="holo-card w-9 h-9 sm:w-auto sm:h-auto px-2 sm:px-2.5 py-1.5 rounded-xl flex items-center justify-center gap-1.5 text-emerald-400 hover:text-white hover:border-emerald-400 transition-all cursor-pointer font-hud active:scale-95" title="Ouvrir le Terminal macOS interactif">
+        <span class="text-sm">📟</span>
+        <span class="hidden md:inline">SHELL</span>
       </button>
 
-      <button onclick="toggleAudioMute()" id="muteBtn" class="holo-card px-2.5 py-1.5 rounded-xl text-rose-300 hover:text-white transition-all cursor-pointer" title="Activer / Désactiver la voix">
+      <button onclick="toggleAudioMute()" id="muteBtn" class="holo-card w-9 h-9 sm:w-auto sm:h-auto px-2 sm:px-2.5 py-1.5 rounded-xl flex items-center justify-center text-rose-300 hover:text-white transition-all cursor-pointer active:scale-95" title="Activer / Désactiver la voix">
         🔊
       </button>
-      <button onclick="toggleConfigModal()" class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 text-rose-300 hover:text-rose-100 hover:border-rose-400 transition-all cursor-pointer" title="Paramètres d'API Z.ai & Pont Mac">
-        <span>⚙️</span>
+      <button onclick="toggleConfigModal()" class="holo-card w-9 h-9 sm:w-auto sm:h-auto px-2 sm:px-2.5 py-1.5 rounded-xl flex items-center justify-center gap-1.5 text-rose-300 hover:text-rose-100 hover:border-rose-400 transition-all cursor-pointer active:scale-95" title="Paramètres d'API Z.ai & Pont Mac">
+        <span class="text-sm">⚙️</span>
         <span class="hidden sm:inline">CONFIG</span>
       </button>
     </div>
   </header>
 
   <!-- Central HAL 9000 Monolith Unit & Optical Eye -->
-  <main class="relative z-30 flex-1 flex flex-col items-center justify-center text-center my-auto py-3">
+  <main class="relative z-30 flex-1 flex flex-col items-center justify-center text-center my-auto py-2 sm:py-3 w-full max-w-4xl mx-auto">
 
     <!-- HUD Lateral Telemetry Panels (Desktop) -->
-    <div class="absolute left-6 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-4 text-left font-hud text-[11px] text-rose-400/80 pointer-events-none">
+    <div class="absolute left-4 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-4 text-left font-hud text-[11px] text-rose-400/80 pointer-events-none">
       <div class="holo-card p-3 rounded-xl border border-rose-500/20 w-44">
         <div class="text-slate-400 text-[10px] uppercase mb-1">Spectre Vocal</div>
         <div class="flex items-end gap-1 h-8" id="equalizerBars">
@@ -198,7 +206,7 @@
       </div>
     </div>
 
-    <div class="absolute right-6 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-4 text-right font-hud text-[11px] text-rose-400/80 pointer-events-none">
+    <div class="absolute right-4 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-4 text-right font-hud text-[11px] text-rose-400/80 pointer-events-none">
       <div class="holo-card p-3 rounded-xl border border-rose-500/20 w-44">
         <div class="text-slate-400 text-[10px] uppercase mb-0.5">Synapse Heuristique / CPU</div>
         <div class="text-amber-400 font-bold text-sm font-sci" id="panelCpuLabel">HAL MATRIX</div>
@@ -212,17 +220,17 @@
     </div>
 
     <!-- Authentic HAL 9000 Monolith Column Faceplate -->
-    <div class="relative w-[280px] sm:w-[330px] md:w-[360px] flex flex-col items-center justify-center hal-monolith p-5 sm:p-6 my-1 group transition-all duration-500">
+    <div class="relative w-[250px] sm:w-[320px] md:w-[360px] flex flex-col items-center justify-center hal-monolith p-3.5 sm:p-6 my-1.5 sm:my-2 group transition-all duration-500 shadow-2xl">
       
       <!-- Top HAL 9000 Blue & Silver Metal Nameplate -->
-      <div class="hal-badge px-5 py-1.5 rounded-md flex items-center gap-2.5 mb-4 shadow-lg border border-sky-500/50">
-        <span class="font-bold text-white tracking-[0.22em] text-sm sm:text-base font-hud">HAL</span>
-        <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_10px_#38bdf8]"></span>
-        <span class="font-bold text-white tracking-[0.22em] text-sm sm:text-base font-sci">9000</span>
+      <div class="hal-badge px-4 sm:px-5 py-1 sm:py-1.5 rounded-md flex items-center gap-2 sm:gap-2.5 mb-2.5 sm:mb-4 shadow-lg border border-sky-500/50">
+        <span class="font-bold text-white tracking-[0.22em] text-xs sm:text-base font-hud">HAL</span>
+        <span class="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-cyan-400 shadow-[0_0_10px_#38bdf8]"></span>
+        <span class="font-bold text-white tracking-[0.22em] text-xs sm:text-base font-sci">9000</span>
       </div>
 
       <!-- HAL 9000 Iconic Fisheye Camera Lens (Click to Talk) -->
-      <div class="relative w-44 h-44 sm:w-52 sm:h-52 rounded-full hal-lens-bezel p-3 flex items-center justify-center cursor-pointer group-hover:scale-[1.02] transition-transform duration-300 hal-eye-glow" onclick="toggleMicrophone()">
+      <div class="relative w-36 h-36 sm:w-48 sm:h-48 md:w-52 md:h-52 rounded-full hal-lens-bezel p-2.5 sm:p-3 flex items-center justify-center cursor-pointer active:scale-95 transition-transform duration-300 hal-eye-glow" onclick="toggleMicrophone()">
         
         <!-- Matte Black Stepped Lens Barrel -->
         <div class="relative w-full h-full rounded-full bg-[#060709] border border-slate-700/80 flex items-center justify-center overflow-hidden shadow-inner">
@@ -236,127 +244,144 @@
           <!-- Discrete Center Icon & Label on Hover/State -->
           <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20">
             <span id="coreIcon" class="text-xl sm:text-2xl filter drop-shadow-[0_0_12px_rgba(255,0,56,0.9)] opacity-0 group-hover:opacity-80 transition-opacity">🎙️</span>
-            <span id="coreLabel" class="text-[8px] sm:text-[9px] font-mono tracking-widest text-rose-300 uppercase opacity-0 group-hover:opacity-100 transition-opacity mt-1">PARLER</span>
+            <span id="coreLabel" class="text-[7px] sm:text-[9px] font-mono tracking-widest text-rose-300 uppercase opacity-0 group-hover:opacity-100 transition-opacity mt-0.5">PARLER</span>
           </div>
         </div>
       </div>
 
       <!-- Speaker / Acoustic Grille below Eye -->
-      <div class="w-28 sm:w-32 h-6 sm:h-7 hal-speaker-grille rounded border border-slate-700/60 mt-4"></div>
-      <div class="text-[9px] font-mono text-slate-400 tracking-widest mt-1.5 uppercase">DISCOVERY ONE • MISSION UNIT</div>
+      <div class="w-24 sm:w-32 h-5 sm:h-7 hal-speaker-grille rounded border border-slate-700/60 mt-3 sm:mt-4"></div>
+      <div class="text-[8px] sm:text-[9px] font-mono text-slate-400 tracking-widest mt-1 uppercase">DISCOVERY ONE • MISSION UNIT</div>
     </div>
 
     <!-- Live Status Pill -->
-    <div id="statusPill" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-rose-500/10 text-rose-300 border border-rose-500/30 mb-2 transition-all duration-300 shadow-md mt-2">
-      <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span> TOUS LES SYSTÈMES SONT OPÉRATIONNELS
+    <div id="statusPill" class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 rounded-full text-[10px] sm:text-xs font-hud bg-rose-500/10 text-rose-300 border border-rose-500/30 mb-2 transition-all duration-300 shadow-md">
+      <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-rose-500 animate-pulse"></span> TOUS LES SYSTÈMES SONT OPÉRATIONNELS
     </div>
 
     <!-- Speech Holographic Dialogue Box -->
-    <div class="holo-card rounded-2xl p-4 md:p-5 w-full max-w-2xl text-left border border-rose-500/30 min-h-[85px] flex flex-col justify-center transition-all duration-300 shadow-2xl relative overflow-hidden">
-      <div class="absolute top-0 left-0 w-16 h-[2px] bg-rose-500"></div>
-      <div id="transcriptPrompt" class="text-xs font-hud text-rose-400/90 mb-1 hidden"></div>
-      <p id="jarvisSpeech" class="text-slate-100 text-sm md:text-base leading-relaxed tracking-wide font-normal">
+    <div class="holo-card rounded-2xl p-3 sm:p-4 md:p-5 w-full max-w-2xl text-left border border-rose-500/30 min-h-[70px] sm:min-h-[85px] flex flex-col justify-center transition-all duration-300 shadow-2xl relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-12 sm:w-16 h-[2px] bg-rose-500"></div>
+      <div id="transcriptPrompt" class="text-[10px] sm:text-xs font-hud text-rose-400/90 mb-1 hidden truncate"></div>
+      <p id="jarvisSpeech" class="text-slate-100 text-xs sm:text-sm md:text-base leading-relaxed tracking-wide font-normal">
         « Bonjour monsieur Nikkoola. Je suis un ordinateur HAL 9000. Tous mes sous-systèmes fonctionnent à la perfection et j'attends vos instructions. »
       </p>
     </div>
 
-    <!-- Quick Action Chips -->
-    <div class="flex flex-wrap items-center justify-center gap-2 mt-3 max-w-2xl">
-      <button onclick="quickAction('Qui es-tu et quel est ton statut opérationnel ?')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-rose-300/80 hover:text-rose-100 hover:border-rose-400 transition-all">🔴 Statut HAL 9000</button>
-      <button onclick="quickAction('Donne-moi un rapport de mission et l\'état de la trajectoire.')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-rose-300/80 hover:text-rose-100 hover:border-rose-400 transition-all">🚀 Rapport Mission</button>
-      <button onclick="quickAction('Vérifie la télémétrie du Mac et l\'intégrité matérielle.')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-rose-300/80 hover:text-rose-100 hover:border-rose-400 transition-all">📊 Diagnostic Mac</button>
-      <button onclick="quickAction('terminal: ls -la')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-emerald-300/80 hover:text-emerald-100 hover:border-emerald-400 transition-all">📟 Terminal zsh</button>
+    <!-- Quick Action Chips (Swipeable Rail on Mobile) -->
+    <div class="w-full max-w-2xl mt-2 px-1">
+      <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 justify-start sm:justify-center">
+        <button onclick="quickAction('Qui es-tu et quel est ton statut opérationnel ?')" class="holo-card px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-hud text-rose-300/90 hover:text-rose-100 hover:border-rose-400 transition-all whitespace-nowrap shrink-0 active:scale-95">🔴 Statut</button>
+        <button onclick="quickAction('Donne-moi un rapport de mission et l\'état de la trajectoire.')" class="holo-card px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-hud text-rose-300/90 hover:text-rose-100 hover:border-rose-400 transition-all whitespace-nowrap shrink-0 active:scale-95">🚀 Rapport Mission</button>
+        <button onclick="quickAction('Vérifie la télémétrie du Mac et l\'intégrité matérielle.')" class="holo-card px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-hud text-rose-300/90 hover:text-rose-100 hover:border-rose-400 transition-all whitespace-nowrap shrink-0 active:scale-95">📊 Diagnostic Mac</button>
+        <button onclick="quickAction('terminal: agy models')" class="holo-card px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-hud text-cyan-300/90 hover:text-cyan-100 hover:border-cyan-400 transition-all whitespace-nowrap shrink-0 active:scale-95">🤖 Antigravity</button>
+        <button onclick="quickAction('terminal: ls -la')" class="holo-card px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-hud text-emerald-300/90 hover:text-emerald-100 hover:border-emerald-400 transition-all whitespace-nowrap shrink-0 active:scale-95">📟 Terminal zsh</button>
+      </div>
     </div>
 
   </main>
 
-  <!-- Bottom Command Input Dock -->
-  <footer class="relative z-30 max-w-3xl w-full mx-auto">
-    <form onsubmit="handleManualInput(event)" class="holo-card rounded-2xl p-2 flex items-center gap-2 border border-rose-500/30 focus-within:border-rose-400 transition-all">
+  <!-- Bottom Command Input Dock (Sticky on Mobile with Safe Area Insets) -->
+  <footer class="sticky bottom-0 z-30 max-w-3xl w-full mx-auto pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-[#050608] via-[#050608]/95 to-transparent">
+    <form onsubmit="handleManualInput(event)" class="holo-card rounded-2xl p-1.5 sm:p-2 flex items-center gap-1.5 sm:gap-2 border border-rose-500/30 focus-within:border-rose-400 transition-all shadow-xl backdrop-blur-xl">
+      <!-- Quick Mic Button for iPhone users -->
+      <button
+        type="button"
+        onclick="toggleMicrophone()"
+        id="dockMicBtn"
+        class="w-9 h-9 rounded-xl bg-rose-500/10 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 flex items-center justify-center shrink-0 active:scale-95 transition-all cursor-pointer"
+        title="Activer la reconnaissance vocale"
+      >
+        <span class="text-base">🎙️</span>
+      </button>
+
       <input
         type="text"
         id="textInput"
-        placeholder="Donnez une instruction à HAL 9000 ou appuyez sur Espace pour parler..."
-        class="flex-1 bg-transparent px-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none font-hud"
+        placeholder="Parler ou taper une consigne..."
+        class="flex-1 bg-transparent px-2.5 sm:px-4 py-2 text-[16px] sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none font-hud min-w-0"
         autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
       />
+
       <button
         type="submit"
-        class="bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 border border-rose-500/40 hover:border-rose-300 px-5 py-2 rounded-xl text-xs font-hud font-bold uppercase tracking-wider transition-all duration-200"
+        class="bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 border border-rose-500/40 hover:border-rose-300 px-3.5 sm:px-5 py-2 rounded-xl text-xs font-hud font-bold uppercase tracking-wider transition-all duration-200 shrink-0 active:scale-95 cursor-pointer"
       >
-        Transmettre
+        <span class="sm:inline hidden">Transmettre</span>
+        <span class="sm:hidden inline">➤</span>
       </button>
     </form>
   </footer>
 
   <!-- Live Mac Screen HUD Monitor & Remote Control Panel -->
   <div id="screenMonitorModal" class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-black/90 backdrop-blur-md hidden overflow-y-auto">
-    <div class="holo-card max-w-5xl w-full rounded-2xl p-4 sm:p-5 border border-cyan-500/50 relative shadow-[0_0_80px_rgba(56,189,248,0.4)] flex flex-col max-h-[94vh]">
+    <div class="holo-card max-w-5xl w-full rounded-2xl p-3 sm:p-5 border border-cyan-500/50 relative shadow-[0_0_80px_rgba(56,189,248,0.4)] flex flex-col max-h-[95dvh] sm:max-h-[94vh]">
       <!-- Modal Header -->
-      <div class="flex items-center justify-between border-b border-cyan-500/30 pb-3 mb-3">
-        <div class="flex items-center gap-2">
-          <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]"></div>
-          <span class="font-sci font-bold text-cyan-300 text-xs sm:text-sm tracking-widest uppercase">MARK VII // LIVE TACTICAL SCREEN FEED</span>
-          <span id="screenStatusNote" class="text-[10px] font-hud text-slate-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/50 hidden sm:inline">1280x800</span>
-          <span id="screenTimestamp" class="text-[10px] font-hud text-cyan-400/90 ml-1">--:--:--</span>
+      <div class="flex items-center justify-between border-b border-cyan-500/30 pb-2.5 mb-2 sm:mb-3">
+        <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399] shrink-0"></div>
+          <span class="font-sci font-bold text-cyan-300 text-xs sm:text-sm tracking-widest uppercase truncate">LIVE MAC SCREEN</span>
+          <span id="screenStatusNote" class="text-[9px] sm:text-[10px] font-hud text-slate-400 bg-cyan-950/60 px-1.5 sm:px-2 py-0.5 rounded border border-cyan-800/50 hidden xs:inline shrink-0">1280x800</span>
+          <span id="screenTimestamp" class="text-[9px] sm:text-[10px] font-hud text-cyan-400/90 ml-1 hidden sm:inline">--:--:--</span>
         </div>
-        <div class="flex items-center gap-2">
-          <button onclick="refreshScreenCapture()" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 font-hud text-xs flex items-center gap-1 transition-all" title="Actualiser la capture d'écran">
-            🔄 Rafraîchir
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button onclick="refreshScreenCapture()" class="px-2 sm:px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 font-hud text-[11px] sm:text-xs flex items-center gap-1 transition-all active:scale-95" title="Actualiser la capture d'écran">
+            🔄 <span class="hidden sm:inline">Rafraîchir</span>
           </button>
-          <button id="autoRefreshBtn" onclick="toggleAutoRefreshScreen()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 font-hud text-xs flex items-center gap-1 transition-all">
-            ⏱️ Auto: OFF
+          <button id="autoRefreshBtn" onclick="toggleAutoRefreshScreen()" class="px-2 sm:px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 font-hud text-[11px] sm:text-xs flex items-center gap-1 transition-all active:scale-95">
+            ⏱️ <span class="hidden sm:inline">Auto: </span>OFF
           </button>
-          <button onclick="toggleScreenMonitor()" class="text-slate-400 hover:text-white font-hud text-base px-2 py-0.5 rounded hover:bg-slate-800 transition-all">✕</button>
+          <button onclick="toggleScreenMonitor()" class="text-slate-400 hover:text-white font-hud text-base px-2 py-0.5 rounded hover:bg-slate-800 transition-all font-bold">✕</button>
         </div>
       </div>
 
       <!-- Tactical Viewport with Holographic scanlines & reticles -->
-      <div class="relative flex-1 bg-black/90 rounded-xl overflow-hidden border border-cyan-500/30 flex items-center justify-center min-h-[280px]">
+      <div class="relative flex-1 bg-black/90 rounded-xl overflow-hidden border border-cyan-500/30 flex items-center justify-center min-h-[200px] sm:min-h-[280px]">
         <!-- Hologram scanline effect -->
         <div class="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,255,255,0.04)_50%)] bg-[length:100%_4px] pointer-events-none z-10"></div>
         <div class="absolute inset-0 border border-cyan-400/20 pointer-events-none z-10"></div>
         <!-- Corner brackets -->
-        <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-cyan-400 pointer-events-none z-10"></div>
-        <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-cyan-400 pointer-events-none z-10"></div>
-        <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-cyan-400 pointer-events-none z-10"></div>
-        <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-cyan-400 pointer-events-none z-10"></div>
+        <div class="absolute top-2 left-2 w-3.5 h-3.5 border-t-2 border-l-2 border-cyan-400 pointer-events-none z-10"></div>
+        <div class="absolute top-2 right-2 w-3.5 h-3.5 border-t-2 border-r-2 border-cyan-400 pointer-events-none z-10"></div>
+        <div class="absolute bottom-2 left-2 w-3.5 h-3.5 border-b-2 border-l-2 border-cyan-400 pointer-events-none z-10"></div>
+        <div class="absolute bottom-2 right-2 w-3.5 h-3.5 border-b-2 border-r-2 border-cyan-400 pointer-events-none z-10"></div>
 
-        <img id="screenImage" src="" alt="Capture Écran Mac" class="w-full h-auto max-h-[62vh] object-contain hidden z-0 transition-opacity duration-200" />
+        <img id="screenImage" src="" alt="Capture Écran Mac" class="w-full h-auto max-h-[50dvh] sm:max-h-[62vh] object-contain hidden z-0 transition-opacity duration-200" />
         
-        <div id="screenPlaceholder" class="flex flex-col items-center justify-center text-center p-6 text-slate-400 font-hud text-xs space-y-3 z-0">
-          <div class="text-5xl animate-bounce">🖥️</div>
-          <div class="text-cyan-300 font-bold text-sm tracking-wider">LIAISON DU FLUX MAC EN ATTENTE</div>
-          <p class="max-w-md text-slate-400 text-[11px] leading-relaxed">
+        <div id="screenPlaceholder" class="flex flex-col items-center justify-center text-center p-4 sm:p-6 text-slate-400 font-hud text-xs space-y-2 sm:space-y-3 z-0">
+          <div class="text-4xl sm:text-5xl animate-bounce">🖥️</div>
+          <div class="text-cyan-300 font-bold text-xs sm:text-sm tracking-wider">LIAISON DU FLUX MAC EN ATTENTE</div>
+          <p class="max-w-md text-slate-400 text-[10px] sm:text-[11px] leading-relaxed">
             Pour afficher l'écran et contrôler votre Mac en direct :<br>
             1. Vérifiez que <code class="text-cyan-300 bg-cyan-950 px-1.5 py-0.5 rounded">python3 server.py</code> tourne sur votre Mac.<br>
-            2. Si vous accédez à cette page via HTTPS Vercel, utilisez un tunnel sécurisé :<br>
-            <code class="text-amber-300 bg-black/60 px-2 py-0.5 rounded border border-amber-500/30">cloudflared tunnel --url http://localhost:8888</code>
+            2. Si vous accédez à cette page via HTTPS Vercel, utilisez le tunnel Always-On.
           </p>
           <div class="flex gap-2">
-            <button onclick="refreshScreenCapture()" class="px-4 py-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/40 font-bold tracking-wide">
+            <button onclick="refreshScreenCapture()" class="px-3.5 py-1.5 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/40 font-bold text-xs tracking-wide active:scale-95">
               ⚡ Tenter la liaison
             </button>
-            <button onclick="toggleConfigModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:text-white">
-              ⚙️ Configurer le Pont
+            <button onclick="toggleConfigModal()" class="px-3.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:text-white text-xs active:scale-95">
+              ⚙️ Pont Mac
             </button>
           </div>
         </div>
       </div>
 
       <!-- Quick Mac Control Action Toolbar -->
-      <div class="mt-3 pt-2.5 border-t border-cyan-500/20 flex flex-wrap items-center justify-between gap-2 text-xs font-hud">
-        <div class="text-cyan-400 flex items-center gap-1.5 text-[11px] font-bold">
-          <span>⚡ CONTRÔLES MAC DIRECTS :</span>
+      <div class="mt-2 sm:mt-3 pt-2 border-t border-cyan-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs font-hud">
+        <div class="text-cyan-400 flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold shrink-0">
+          <span>⚡ ACTIONS MAC :</span>
         </div>
-        <div class="flex flex-wrap items-center gap-1.5">
-          <button onclick="executeQuickMacAction('mode sombre')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">🌙 Dark Mode</button>
-          <button onclick="executeQuickMacAction('volume 50')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">🔊 Vol 50%</button>
-          <button onclick="executeQuickMacAction('ouvre Safari')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">🧭 Safari</button>
-          <button onclick="executeQuickMacAction('musique pause')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">🎵 Pause / Play</button>
-          <button onclick="executeQuickMacAction('ouvre le Finder')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">📁 Finder</button>
-          <button onclick="executeQuickMacAction('verrouille')" class="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-[11px] transition-all">🔒 Verrouiller</button>
-          <button onclick="toggleTerminalModal()" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold transition-all flex items-center gap-1">📟 Shell Terminal</button>
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+          <button onclick="executeQuickMacAction('mode sombre')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] whitespace-nowrap shrink-0 active:scale-95">🌙 Dark Mode</button>
+          <button onclick="executeQuickMacAction('volume 50')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] whitespace-nowrap shrink-0 active:scale-95">🔊 Vol 50%</button>
+          <button onclick="executeQuickMacAction('ouvre Safari')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] whitespace-nowrap shrink-0 active:scale-95">🧭 Safari</button>
+          <button onclick="executeQuickMacAction('musique pause')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] whitespace-nowrap shrink-0 active:scale-95">🎵 Pause/Play</button>
+          <button onclick="executeQuickMacAction('ouvre le Finder')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] whitespace-nowrap shrink-0 active:scale-95">📁 Finder</button>
+          <button onclick="executeQuickMacAction('verrouille')" class="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-[11px] whitespace-nowrap shrink-0 active:scale-95">🔒 Verrouiller</button>
+          <button onclick="toggleTerminalModal()" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold whitespace-nowrap shrink-0 active:scale-95 flex items-center gap-1">📟 Shell</button>
         </div>
       </div>
     </div>
@@ -364,40 +389,39 @@
 
   <!-- Modal Interactive Cyber Terminal macOS -->
   <div id="terminalModal" class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-black/90 backdrop-blur-md hidden overflow-y-auto">
-    <div class="holo-card max-w-4xl w-full rounded-2xl p-3 sm:p-5 border border-emerald-500/50 relative shadow-[0_0_80px_rgba(16,185,129,0.35)] flex flex-col h-[92vh] sm:h-[82vh]">
+    <div class="holo-card max-w-4xl w-full rounded-2xl p-2.5 sm:p-5 border border-emerald-500/50 relative shadow-[0_0_80px_rgba(16,185,129,0.35)] flex flex-col h-[95dvh] sm:h-[82vh]">
       <!-- Terminal Header -->
-      <div class="flex items-center justify-between border-b border-emerald-500/30 pb-2.5 mb-2">
-        <div class="flex items-center gap-2">
-          <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]"></div>
-          <span class="font-sci font-bold text-emerald-300 text-xs sm:text-sm tracking-widest uppercase">MARK VII // macOS TTY SHELL</span>
-          <span id="terminalCwdBadge" class="text-[10px] font-mono text-emerald-400/90 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/50 max-w-[160px] sm:max-w-[320px] truncate">~</span>
+      <div class="flex items-center justify-between border-b border-emerald-500/30 pb-2 mb-2">
+        <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399] shrink-0"></div>
+          <span class="font-sci font-bold text-emerald-300 text-xs sm:text-sm tracking-widest uppercase shrink-0">macOS SHELL</span>
+          <span id="terminalCwdBadge" class="text-[10px] font-mono text-emerald-400/90 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/50 truncate max-w-[120px] sm:max-w-[320px]">~</span>
         </div>
-        <div class="flex items-center gap-2">
-          <button onclick="clearTerminalOutput()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 font-hud text-xs transition-all">
-            🧹 Effacer
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button onclick="clearTerminalOutput()" class="px-2 sm:px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 font-hud text-[11px] sm:text-xs transition-all active:scale-95">
+            🧹 <span class="hidden sm:inline">Effacer</span>
           </button>
-          <button onclick="toggleTerminalModal()" class="text-slate-400 hover:text-white font-hud text-base px-2 py-0.5 rounded hover:bg-slate-800 transition-all">✕</button>
+          <button onclick="toggleTerminalModal()" class="text-slate-400 hover:text-white font-hud text-base px-2.5 py-1 rounded-lg hover:bg-slate-800 transition-all font-bold">✕</button>
         </div>
       </div>
 
       <!-- Terminal Output Screen -->
-      <div id="terminalOutput" class="flex-1 bg-black/95 rounded-xl p-3 sm:p-4 overflow-y-auto font-mono text-xs text-emerald-300 leading-relaxed border border-emerald-500/30 space-y-1.5 select-text shadow-inner">
-        <div class="text-slate-500 text-[11px] pb-2 border-b border-slate-800">
-          ⚡ JARVIS macOS Interactive Shell v2.4 — Connecté à MacBook Pro (zsh)<br>
-          Tapez vos commandes shell ou utilisez les raccourcis tactiles ci-dessous.
+      <div id="terminalOutput" class="flex-1 bg-black/95 rounded-xl p-2.5 sm:p-4 overflow-y-auto font-mono text-xs text-emerald-300 leading-relaxed border border-emerald-500/30 space-y-1.5 select-text shadow-inner">
+        <div class="text-slate-500 text-[10px] sm:text-[11px] pb-1.5 border-b border-slate-800">
+          ⚡ JARVIS macOS Interactive Shell — MacBook Pro (zsh)<br>
+          Raccourcis tactiles iPhone disponibles ci-dessous.
         </div>
       </div>
 
       <!-- Quick Command Chips for iPhone Touch -->
       <div class="py-2 flex items-center gap-1.5 overflow-x-auto text-[11px] font-mono no-scrollbar">
-        <button onclick="runQuickCommand('agy models')" class="px-2.5 py-1 rounded-lg bg-cyan-950/70 text-cyan-300 border border-cyan-800/60 hover:bg-cyan-900/60 whitespace-nowrap transition-all font-bold">🤖 agy models</button>
-        <button onclick="runQuickCommand('agy -p &quot;dis bonjour en 3 mots&quot;')" class="px-2.5 py-1 rounded-lg bg-cyan-950/70 text-cyan-300 border border-cyan-800/60 hover:bg-cyan-900/60 whitespace-nowrap transition-all font-bold">💬 agy prompt</button>
-        <button onclick="runQuickCommand('agy -p &quot;quel temps fait-il sur paris ?&quot;')" class="px-2.5 py-1 rounded-lg bg-amber-950/70 text-amber-300 border border-amber-800/60 hover:bg-amber-900/60 whitespace-nowrap transition-all font-bold">☀️ agy météo</button>
-        <button onclick="runQuickCommand('ls -la')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">ls -la</button>
-        <button onclick="runQuickCommand('git status')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">git status</button>
-        <button onclick="runQuickCommand('top')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">top (CPU/RAM)</button>
-        <button onclick="runQuickCommand('uptime && df -h /')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">uptime / disque</button>
-        <button onclick="runQuickCommand('brew list --versions | head -n 10')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">brew</button>
+        <button onclick="runQuickCommand('agy models')" class="px-2.5 py-1.5 rounded-lg bg-cyan-950/70 text-cyan-300 border border-cyan-800/60 hover:bg-cyan-900/60 whitespace-nowrap transition-all font-bold shrink-0 active:scale-95">🤖 agy models</button>
+        <button onclick="runQuickCommand('agy -p &quot;dis bonjour en 3 mots&quot;')" class="px-2.5 py-1.5 rounded-lg bg-cyan-950/70 text-cyan-300 border border-cyan-800/60 hover:bg-cyan-900/60 whitespace-nowrap transition-all font-bold shrink-0 active:scale-95">💬 agy prompt</button>
+        <button onclick="runQuickCommand('agy -p &quot;quel temps fait-il sur paris ?&quot;')" class="px-2.5 py-1.5 rounded-lg bg-amber-950/70 text-amber-300 border border-amber-800/60 hover:bg-amber-900/60 whitespace-nowrap transition-all font-bold shrink-0 active:scale-95">☀️ agy météo</button>
+        <button onclick="runQuickCommand('ls -la')" class="px-2.5 py-1.5 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all shrink-0 active:scale-95">ls -la</button>
+        <button onclick="runQuickCommand('git status')" class="px-2.5 py-1.5 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all shrink-0 active:scale-95">git status</button>
+        <button onclick="runQuickCommand('top')" class="px-2.5 py-1.5 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all shrink-0 active:scale-95">top (CPU)</button>
+        <button onclick="runQuickCommand('uptime && df -h /')" class="px-2.5 py-1.5 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all shrink-0 active:scale-95">uptime</button>
       </div>
 
       <!-- Terminal Input Form -->
@@ -406,8 +430,8 @@
         <input
           type="text"
           id="terminalInput"
-          placeholder="Entrez une commande (ex: ls, cd jarvis, python3 ...)"
-          class="flex-1 bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3 py-2.5 text-xs text-emerald-200 font-mono focus:outline-none focus:border-emerald-400 placeholder-slate-600"
+          placeholder="Entrez une commande (ex: ls, agy -p ...)"
+          class="flex-1 bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3 py-2 text-[16px] sm:text-xs text-emerald-200 font-mono focus:outline-none focus:border-emerald-400 placeholder-slate-600 min-w-0"
           autocomplete="off"
           autocorrect="off"
           autocapitalize="off"
@@ -416,49 +440,48 @@
         <button
           type="submit"
           id="terminalSubmitBtn"
-          class="px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 border border-emerald-500/40 font-mono font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap"
+          class="px-3.5 sm:px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 border border-emerald-500/40 font-mono font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap shrink-0 active:scale-95"
         >
-          Exécuter
+          <span class="hidden sm:inline">Exécuter</span>
+          <span class="sm:hidden inline">OK</span>
         </button>
       </form>
     </div>
   </div>
 
   <!-- Modal Configuration Z.ai & Pont Mac -->
-  <div id="configModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md hidden overflow-y-auto">
-    <div class="holo-card max-w-lg w-full rounded-2xl p-5 sm:p-6 border border-cyan-500/50 relative shadow-[0_0_60px_rgba(56,189,248,0.35)] max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between border-b border-cyan-500/30 pb-3 mb-4">
-        <h3 class="font-sci font-bold text-cyan-400 text-sm tracking-wider flex items-center gap-2">
-          <span>⚙️</span> CONFIGURATION SYSTÈME // CLOUD & PONT MAC
+  <div id="configModal" class="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/85 backdrop-blur-md hidden overflow-y-auto">
+    <div class="holo-card max-w-lg w-full rounded-2xl p-4 sm:p-6 border border-cyan-500/50 relative shadow-[0_0_60px_rgba(56,189,248,0.35)] max-h-[92dvh] sm:max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-cyan-500/30 pb-2.5 mb-3 sm:mb-4">
+        <h3 class="font-sci font-bold text-cyan-400 text-xs sm:text-sm tracking-wider flex items-center gap-2 truncate">
+          <span>⚙️</span> CONFIGURATION SYSTÈME
         </h3>
-        <button onclick="toggleConfigModal()" class="text-slate-400 hover:text-white font-hud text-sm">✕</button>
+        <button onclick="toggleConfigModal()" class="text-slate-400 hover:text-white font-hud text-base px-2 py-0.5 rounded hover:bg-slate-800 transition-all font-bold">✕</button>
       </div>
 
-      <div class="space-y-4 text-xs font-hud">
+      <div class="space-y-3 sm:space-y-4 text-xs font-hud">
         <!-- Section Pont Mac Local -->
-        <div class="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 space-y-2">
+        <div class="p-2.5 sm:p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 space-y-2">
           <div class="flex items-center justify-between">
-            <label class="block text-cyan-300 font-bold tracking-wide">🖥️ Liaison Pont Mac (Contrôle & Écran)</label>
+            <label class="block text-cyan-300 font-bold tracking-wide text-[11px] sm:text-xs">🖥️ Liaison Pont Mac (Contrôle & Écran)</label>
             <span id="macTestStatus" class="text-[10px] text-slate-400">Non testé</span>
           </div>
-          <div class="flex gap-2">
+          <div class="flex gap-1.5 sm:gap-2">
             <input
               type="text"
               id="cfgMacBridgeUrl"
-              placeholder="http://localhost:8888 ou https://xxxx.trycloudflare.com"
-              class="flex-1 bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400 text-xs"
+              placeholder="https://xxxx.trycloudflare.com"
+              class="flex-1 bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400 text-[16px] sm:text-xs min-w-0"
             />
-            <button type="button" onclick="testMacBridgeConnection()" class="px-3 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/40 text-xs font-bold whitespace-nowrap transition-all">
+            <button type="button" onclick="testMacBridgeConnection()" class="px-3 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/40 text-xs font-bold whitespace-nowrap transition-all shrink-0 active:scale-95">
               Tester
             </button>
           </div>
           <p class="text-[10px] text-slate-400 leading-relaxed">
-            • <strong class="text-cyan-300">En local</strong> : <code class="text-cyan-400">http://localhost:8888</code>.<br>
-            • <strong class="text-cyan-300">À distance sur Vercel HTTPS</strong> : Lancez sur votre Mac :<br>
-            <code class="text-amber-300 bg-black/60 px-1.5 py-0.5 rounded border border-amber-500/30">cloudflared tunnel --url http://localhost:8888</code> et collez l'URL HTTPS obtenue.
+            • <strong class="text-cyan-300">À distance sur iPhone</strong> : Entrez votre URL HTTPS Cloudflare Tunnel.
           </p>
           <div class="flex items-center justify-between pt-1 border-t border-cyan-500/20">
-            <span class="text-slate-300 text-[11px]">Routage prioritaire vers le Mac (actions & commandes)</span>
+            <span class="text-slate-300 text-[11px]">Routage direct vers le Mac</span>
             <input type="checkbox" id="cfgRouteToMac" checked class="accent-cyan-400 w-4 h-4 cursor-pointer" />
           </div>
         </div>
@@ -468,17 +491,16 @@
           <input
             type="password"
             id="cfgApiKey"
-            placeholder="Clé préconfigurée dans Vercel (ou saisie manuelle)"
-            class="w-full bg-slate-900/90 border border-cyan-500/30 rounded-xl px-3 py-2 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400"
+            placeholder="Clé préconfigurée dans Vercel"
+            class="w-full bg-slate-900/90 border border-cyan-500/30 rounded-xl px-3 py-2 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400 text-[16px] sm:text-xs"
           />
-          <span class="text-[10px] text-slate-500 mt-1 block">Laisser vide pour utiliser la variable d'environnement Vercel (ZAI_API_KEY).</span>
         </div>
 
         <div>
           <label class="block text-slate-300 mb-1">Modèle d'Intelligence Z.ai</label>
           <select
             id="cfgModel"
-            class="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-cyan-400"
+            class="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-cyan-400 text-[16px] sm:text-xs"
           >
             <option value="glm-4-plus">GLM-4-Plus (Recommandé — Rapide & Précis)</option>
             <option value="glm-4.5">GLM-4.5 (Raisonnement avancé & MoE)</option>
@@ -494,9 +516,9 @@
           </div>
         </div>
 
-        <div class="pt-3 border-t border-cyan-500/20 flex gap-2 justify-end">
-          <button onclick="toggleConfigModal()" class="px-4 py-2 rounded-xl border border-slate-700 text-slate-400 hover:text-white">Annuler</button>
-          <button onclick="saveConfig()" class="px-5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/40 font-bold">Sauvegarder</button>
+        <div class="pt-2 sm:pt-3 border-t border-cyan-500/20 flex gap-2 justify-end">
+          <button onclick="toggleConfigModal()" class="px-3.5 py-1.5 rounded-xl border border-slate-700 text-slate-400 hover:text-white text-xs active:scale-95">Annuler</button>
+          <button onclick="saveConfig()" class="px-4 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/40 font-bold text-xs active:scale-95">Sauvegarder</button>
         </div>
       </div>
     </div>
@@ -870,6 +892,17 @@
       const icon = document.getElementById('coreIcon');
       const label = document.getElementById('coreLabel');
       const statusPill = document.getElementById('statusPill');
+      const dockMic = document.getElementById('dockMicBtn');
+
+      if (dockMic) {
+        if (state === "listening") {
+          dockMic.className = "w-9 h-9 rounded-xl bg-rose-600 text-white shadow-[0_0_15px_#f43f5e] border border-rose-300 flex items-center justify-center shrink-0 animate-pulse transition-all cursor-pointer";
+        } else if (state === "processing") {
+          dockMic.className = "w-9 h-9 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-400 flex items-center justify-center shrink-0 transition-all cursor-pointer";
+        } else {
+          dockMic.className = "w-9 h-9 rounded-xl bg-rose-500/10 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 flex items-center justify-center shrink-0 active:scale-95 transition-all cursor-pointer";
+        }
+      }
 
       if (state === "listening") {
         if (icon) icon.textContent = "🔴";
