@@ -1587,12 +1587,34 @@ void main(){
       chatHistory.push({ role: 'assistant', content: reply });
       if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
 
-      speechEl.textContent = `« ${reply} »`;
+      function formatMarkdownDisplay(raw) {
+        if (!raw) return '';
+        let s = raw
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        s = s.replace(/\*\*(.*?)\*\*/g, '<strong class="text-rose-300 font-bold">$1</strong>');
+        s = s.replace(/\*(.*?)\*/g, '<em class="text-slate-300">$1</em>');
+        s = s.replace(/•/g, '<span class="text-rose-400 mr-1.5 font-bold">›</span>');
+        s = s.replace(/\n\n/g, '<div class="my-2"></div>');
+        s = s.replace(/\n/g, '<br>');
+        return s;
+      }
+
+      speechEl.innerHTML = formatMarkdownDisplay(reply);
       playSciFiChime('done');
 
       // Synthèse vocale si activée
       if (config.voiceEnabled) {
-        speakBrowser(reply);
+        const cleanForSpeech = reply
+          .replace(/\*\*(.*?)\*\*/g, '$1')
+          .replace(/\*(.*?)\*/g, '$1')
+          .replace(/[•›\-\#]/g, '')
+          .replace(/\[.*?\]/g, '')
+          .replace(/https?:\/\/\S+/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        speakBrowser(cleanForSpeech);
       }
 
       updateReactorState("idle");
