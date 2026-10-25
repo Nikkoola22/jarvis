@@ -285,8 +285,10 @@
     <div class="w-full max-w-2xl mt-2 px-1">
       <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 justify-start sm:justify-center">
         <button onclick="quickAction('Qui es-tu et quel est ton statut opérationnel ?')" class="holo-card px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-hud text-rose-300/90 hover:text-rose-100 hover:border-rose-400 transition-all whitespace-nowrap shrink-0 active:scale-95">🔴 Statut</button>
-        <button onclick="quickAction('Donne-moi un rapport de mission et l\'état de la trajectoire.')" class="holo-card px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-hud text-rose-300/90 hover:text-rose-100 hover:border-rose-400 transition-all whitespace-nowrap shrink-0 active:scale-95">🚀 Rapport Mission</button>
-        <button onclick="quickAction('Vérifie la télémétrie du Mac et l\'intégrité matérielle.')" class="holo-card px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-hud text-rose-300/90 hover:text-rose-100 hover:border-rose-400 transition-all whitespace-nowrap shrink-0 active:scale-95">📊 Diagnostic Mac</button>
+        <button onclick="quickAction('Consulte mes e-mails pro dans Outlook')" class="holo-card px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-hud text-sky-300/90 hover:text-sky-100 hover:border-sky-400 transition-all whitespace-nowrap shrink-0 active:scale-95">📧 Outlook Pro</button>
+        <button onclick="quickAction('Quel est mon planning de réunions Outlook aujourd\'hui ?')" class="holo-card px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-hud text-amber-300/90 hover:text-amber-100 hover:border-amber-400 transition-all whitespace-nowrap shrink-0 active:scale-95">📅 Réunions Pro</button>
+        <button onclick="quickAction('Donne-moi un rapport de mission et l\'état de la trajectoire.')" class="holo-card px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-hud text-rose-300/90 hover:text-rose-100 hover:border-rose-400 transition-all whitespace-nowrap shrink-0 active:scale-95">🚀 Rapport</button>
+        <button onclick="quickAction('Vérifie la télémétrie du Mac et l\'intégrité matérielle.')" class="holo-card px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-hud text-rose-300/90 hover:text-rose-100 hover:border-rose-400 transition-all whitespace-nowrap shrink-0 active:scale-95">📊 Diagnostic</button>
         <button onclick="quickAction('terminal: agy models')" class="holo-card px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-hud text-cyan-300/90 hover:text-cyan-100 hover:border-cyan-400 transition-all whitespace-nowrap shrink-0 active:scale-95">🤖 Antigravity</button>
         <button onclick="quickAction('terminal: ls -la')" class="holo-card px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-hud text-emerald-300/90 hover:text-emerald-100 hover:border-emerald-400 transition-all whitespace-nowrap shrink-0 active:scale-95">📟 Terminal zsh</button>
       </div>
@@ -529,6 +531,30 @@
           </div>
         </div>
 
+        <!-- Section Microsoft Outlook & 365 Pro -->
+        <div class="p-3 rounded-xl bg-sky-950/20 border border-sky-500/30 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-sky-300 font-bold flex items-center gap-1.5 text-[11px] sm:text-xs">
+              <span>📧</span> COMPTE OUTLOOK PRO (OFFICE 365)
+            </span>
+            <span id="outlookStatusBadge" class="text-[9px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/40">MAC LOCAL DÉTECTÉ</span>
+          </div>
+          <p class="text-[10px] text-slate-400 leading-relaxed">
+            1. <strong>Local Mac</strong> : Pilotage d'Outlook par AppleScript.<br>
+            2. <strong>Cloud Graph</strong> : Renseignez un jeton Microsoft Graph pour synchronisation distante iPhone.
+          </p>
+          <div>
+            <label class="block text-slate-400 text-[10px] mb-1">Jeton d'accès Microsoft Graph (Optionnel pour Cloud) :</label>
+            <input type="password" id="cfgOutlookToken" placeholder="eyJ0eXAiOiJKV1QiLC..." class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sky-200 text-xs focus:outline-none focus:border-sky-400 transition-colors">
+          </div>
+          <div class="flex items-center justify-between pt-1">
+            <button type="button" onclick="testOutlookConnection()" class="px-2.5 py-1 rounded-lg bg-sky-500/20 hover:bg-sky-500/40 text-sky-300 border border-sky-500/40 text-[10px] font-bold transition-all active:scale-95">
+              Tester Outlook
+            </button>
+            <span id="outlookTestStatus" class="text-[10px] text-slate-400"></span>
+          </div>
+        </div>
+
         <div class="pt-2 sm:pt-3 border-t border-cyan-500/20 flex gap-2 justify-end">
           <button onclick="toggleConfigModal()" class="px-3.5 py-1.5 rounded-xl border border-slate-700 text-slate-400 hover:text-white text-xs active:scale-95">Annuler</button>
           <button onclick="saveConfig()" class="px-4 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/40 font-bold text-xs active:scale-95">Sauvegarder</button>
@@ -545,7 +571,8 @@
       model: 'glm-4-plus',
       voiceEnabled: true,
       macBridgeUrl: 'http://localhost:8888',
-      routeToMac: true
+      routeToMac: true,
+      outlookToken: ''
     };
 
     let isMacConnected = false;
@@ -575,6 +602,7 @@
       document.getElementById('cfgVoiceEnabled').checked = config.voiceEnabled !== false;
       document.getElementById('cfgMacBridgeUrl').value = config.macBridgeUrl;
       document.getElementById('cfgRouteToMac').checked = config.routeToMac !== false;
+      document.getElementById('cfgOutlookToken').value = config.outlookToken || '';
       document.getElementById('badgeModel').textContent = `Z.ai ${config.model.toUpperCase()}`;
     }
 
@@ -586,12 +614,63 @@
       config.macBridgeUrl = cleanBridgeUrl(rawBridge) || 'http://localhost:8888';
       document.getElementById('cfgMacBridgeUrl').value = config.macBridgeUrl;
       config.routeToMac = document.getElementById('cfgRouteToMac').checked;
+      config.outlookToken = document.getElementById('cfgOutlookToken').value.trim();
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
       } catch (e) {}
       document.getElementById('badgeModel').textContent = `Z.ai ${config.model.toUpperCase()}`;
       toggleConfigModal();
       checkMacBridge();
+    }
+
+    async function testOutlookConnection() {
+      const statusEl = document.getElementById('outlookTestStatus');
+      statusEl.textContent = "Test de liaison...";
+      statusEl.className = "text-[10px] text-sky-400 animate-pulse";
+
+      const token = document.getElementById('cfgOutlookToken').value.trim();
+      const bridgeUrl = (cleanBridgeUrl(document.getElementById('cfgMacBridgeUrl').value) || 'http://localhost:8888').replace(/\/$/, '');
+
+      // 1. Tenter via le Mac local si disponible
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 4000);
+        const res = await fetch(`${bridgeUrl}/api/outlook`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: token ? 'save_token' : 'check', token: token }),
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+        if (res.ok) {
+          const data = await res.json();
+          statusEl.textContent = "✓ Outlook Mac prêt !";
+          statusEl.className = "text-[10px] text-emerald-400 font-bold";
+          return;
+        }
+      } catch (e) {}
+
+      // 2. Tenter via le Cloud Vercel Graph
+      if (token) {
+        try {
+          const res = await fetch('/api/outlook', {
+            headers: { 'X-Graph-Token': token }
+          });
+          const data = await res.json();
+          if (data.configured) {
+            statusEl.textContent = `✓ Graph connecté (${data.unreadCount} non lus)`;
+            statusEl.className = "text-[10px] text-emerald-400 font-bold";
+            return;
+          } else {
+            statusEl.textContent = "Erreur jeton Graph";
+            statusEl.className = "text-[10px] text-rose-400";
+            return;
+          }
+        } catch (e) {}
+      }
+
+      statusEl.textContent = "✓ Mode AppleScript Mac actif";
+      statusEl.className = "text-[10px] text-sky-300";
     }
 
     function toggleConfigModal() {
