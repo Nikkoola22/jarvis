@@ -131,8 +131,34 @@ class JarvisHandler(http.server.BaseHTTPRequestHandler):
                     self.wfile.write(json.dumps({"error": "Commande vide"}).encode("utf-8"))
                     return
 
+                # Guardrails pour commandes interactives TUI
+                if cmd == "agy":
+                    out = (
+                        "💡 Antigravity CLI ('agy' seul) lance une interface TUI plein écran qui requiert un terminal physique.\n"
+                        "Pour interroger Antigravity depuis votre iPhone ou le Web, utilisez le mode direct avec l'option -p :\n\n"
+                        "  👉 agy -p \"votre consigne ou prompt\"\n"
+                        "  👉 agy models\n"
+                        "  👉 agy changelog\n"
+                        "  👉 agy agent\n"
+                    )
+                    code = 0
+                elif cmd in ["nano", "vi", "vim"]:
+                    out = f"💡 '{cmd}' est un éditeur plein écran interactif. Pour afficher un fichier, utilisez 'cat <fichier>' ou 'head -n 20 <fichier>'.\n"
+                    code = 0
+                elif cmd == "top":
+                    res = subprocess.run(
+                        "top -l 1 | head -n 15",
+                        shell=True,
+                        executable="/bin/zsh",
+                        capture_output=True,
+                        text=True,
+                        timeout=15,
+                        cwd=cwd
+                    )
+                    out = res.stdout + res.stderr
+                    code = res.returncode
                 # Gestion spéciale de la navigation 'cd'
-                if cmd == "cd" or cmd.startswith("cd "):
+                elif cmd == "cd" or cmd.startswith("cd "):
                     target = cmd[3:].strip() if cmd.startswith("cd ") else "~"
                     target_dir = os.path.expanduser(target)
                     if not os.path.isabs(target_dir):

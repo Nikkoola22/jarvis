@@ -331,11 +331,12 @@
 
       <!-- Quick Command Chips for iPhone Touch -->
       <div class="py-2 flex items-center gap-1.5 overflow-x-auto text-[11px] font-mono no-scrollbar">
+        <button onclick="runQuickCommand('agy models')" class="px-2.5 py-1 rounded-lg bg-cyan-950/70 text-cyan-300 border border-cyan-800/60 hover:bg-cyan-900/60 whitespace-nowrap transition-all font-bold">🤖 agy models</button>
+        <button onclick="runQuickCommand('agy -p &quot;dis bonjour en 3 mots&quot;')" class="px-2.5 py-1 rounded-lg bg-cyan-950/70 text-cyan-300 border border-cyan-800/60 hover:bg-cyan-900/60 whitespace-nowrap transition-all font-bold">💬 agy prompt</button>
         <button onclick="runQuickCommand('ls -la')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">ls -la</button>
         <button onclick="runQuickCommand('git status')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">git status</button>
-        <button onclick="runQuickCommand('top -l 1 | head -n 12')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">top (CPU/RAM)</button>
+        <button onclick="runQuickCommand('top')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">top (CPU/RAM)</button>
         <button onclick="runQuickCommand('uptime && df -h /')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">uptime / disque</button>
-        <button onclick="runQuickCommand('ps aux | grep -i jarvis')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">process jarvis</button>
         <button onclick="runQuickCommand('brew list --versions | head -n 10')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">brew</button>
       </div>
 
