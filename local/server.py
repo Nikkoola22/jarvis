@@ -53,6 +53,24 @@ class JarvisHandler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(data).encode("utf-8"))
             return
 
+        if parsed.path == "/api/screen":
+            img_path = "/tmp/jarvis_screen.jpg"
+            raw_path = "/tmp/jarvis_screen.png"
+            import subprocess
+            subprocess.run(["screencapture", "-x", raw_path])
+            subprocess.run(["sips", "-s", "format", "jpeg", "-Z", "1280", raw_path, "--out", img_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            if os.path.exists(img_path):
+                self.send_response(200)
+                self.send_header("Content-Type", "image/jpeg")
+                self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                self.end_headers()
+                with open(img_path, "rb") as f:
+                    self.wfile.write(f.read())
+            else:
+                self.send_response(500)
+                self.end_headers()
+            return
+
         self.send_response(404)
         self.end_headers()
 
