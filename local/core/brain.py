@@ -194,9 +194,11 @@ def ask(query: str, history: list = None) -> tuple[str, str | None]:
     if any(w in q_low for w in ["mes rappels", "liste des rappels", "quels sont mes rappels"]):
         return connectors.list_reminders(), "list_reminders"
 
-    # Calendrier
-    if any(w in q_low for w in ["calendrier", "agenda", "rendez-vous"]):
-        return connectors.open_calendar_and_view(), "calendar"
+    # Calendrier, Planning & Réunions
+    if any(w in q_low for w in ["planning", "agenda", "calendrier", "reunion", "réunion", "rendez-vous", "rdv"]):
+        if any(w in q_low for w in ["ouvre", "lance", "affiche l'app", "application"]):
+            return connectors.open_calendar_and_view(), "calendar"
+        return connectors.get_outlook_calendar(), "outlook_calendar"
 
     # WhatsApp
     if "whatsapp" in q_low:

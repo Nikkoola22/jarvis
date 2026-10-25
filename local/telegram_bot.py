@@ -128,6 +128,7 @@ def handle_incoming_message(msg: dict):
             f"🔴 *HAL 9000 connecté et opérationnel.* Bonjour {user_name}.\n\n"
             "Tous mes sous-systèmes fonctionnent à la perfection sur votre MacBook Pro.\n\n"
             "📌 *Commandes rapides :*\n"
+            "• `/agenda` : Consulter votre planning et vos prochaines réunions\n"
             "• `/mails` : Consulter vos e-mails pro Exchange en direct\n"
             "• `/ecran` : Recevoir une capture d'écran live du Mac\n"
             "• `/status` : Télémesure complète (CPU, Batterie, RAM)\n"
@@ -137,11 +138,17 @@ def handle_incoming_message(msg: dict):
         send_message(chat_id, welcome)
         return
 
-    # 2. Consultation des E-mails Professionnels Exchange
-    if text == "/mails" or any(w in text_lower for w in ["mail", "mails", "outlook", "exchange"]):
+    # 2. Consultation Planning & Réunions Exchange
+    if text == "/agenda" or text == "/planning" or any(w in text_lower for w in ["planning", "agenda", "calendrier", "reunion", "réunion"]):
+        send_message(chat_id, "📅 *Consultation de votre planning Exchange en cours...*")
+        res = connectors.get_outlook_calendar()
+        send_message(chat_id, res)
+        return
+
+    # 3. Consultation des E-mails Professionnels Exchange
+    if text == "/mails" or (any(w in text_lower for w in ["mail", "mails", "exchange"]) or ("outlook" in text_lower and not any(w in text_lower for w in ["planning", "agenda", "calendrier", "reunion", "réunion"]))):
         send_message(chat_id, "⏳ *Consultation de votre boîte professionnelle Exchange en cours...*")
         res = connectors.check_outlook_emails(count=6)
-        # Échappement Markdown basique pour Telegram
         send_message(chat_id, res)
         return
 

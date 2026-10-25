@@ -279,14 +279,100 @@ def check_outlook_emails(count: int = 6) -> str:
     return "\n".join(lines)
 
 def get_outlook_calendar() -> str:
-    """Consulte l'agenda pro de la journée."""
+    """Consulte l'agenda et planning pro Exchange (aujourd'hui et prochains jours)."""
+    # 1. Tenter via le connecteur natif EventKit macOS (rapide et local)
+    bin_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "get_calendar")
+    if not os.path.exists(bin_path):
+        bin_path = "/Users/nikkoola/jarvis/get_calendar"
+    
+    if os.path.exists(bin_path):
+        try:
+            import datetime
+            res = subprocess.run([bin_path], capture_output=True, text=True, timeout=6)
+            raw = res.stdout.strip()
+            if raw:
+                days_fr = {
+                    'Monday': 'Lundi', 'Tuesday': 'Mardi', 'Wednesday': 'Mercredi',
+                    'Thursday': 'Jeudi', 'Friday': 'Vendredi', 'Saturday': 'Samedi', 'Sunday': 'Dimanche'
+                }
+                months_fr = {
+                    1: 'janvier', 2: 'février', 3: 'mars', 4: 'avril', 5: 'mai', 6: 'juin',
+                    7: 'juillet', 8: 'août', 9: 'septembre', 10: 'octobre', 11: 'novembre', 12: 'décembre'
+                }
+
+                lines = [l.strip() for l in raw.split('\n') if l.strip()]
+                today = datetime.date.today()
+                today_str = today.strftime('%Y-%m-%d')
+                tomorrow_str = (today + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+
+                today_events = []
+                upcoming_by_date = {}
+
+                for line in lines:
+                    parts = line.split('||||')
+                    if len(parts) < 5:
+                        continue
+                    cal_name, title, dt_str, start_t, end_t = parts[0], parts[1], parts[2], parts[3], parts[4]
+                    loc = parts[5].strip() if len(parts) > 5 else ''
+
+                    if any(ign in cal_name.lower() for ign in ['fêtes', 'holidays', 'jours fériés', 'scolaire']):
+                        continue
+
+                    item = {'cal': cal_name, 'title': title, 'date': dt_str, 'start': start_t, 'end': end_t, 'loc': loc}
+                    if dt_str == today_str:
+                        today_events.append(item)
+                    elif dt_str > today_str:
+                        if dt_str not in upcoming_by_date:
+                            upcoming_by_date[dt_str] = []
+                        upcoming_by_date[dt_str].append(item)
+
+                today_fr = f"{days_fr.get(today.strftime('%A'), '')} {today.day} {months_fr.get(today.month, '')}"
+                out = ["📅 **Planning & Réunions Professionnelles** (Exchange / Ville de Gennevilliers)\n"]
+
+                if today_events:
+                    out.append(f"Aujourd'hui (**{today_fr}**), vous avez **{len(today_events)} réunion(s)** :")
+                    for ev in today_events:
+                        loc_str = f" — 📍 *{ev['loc']}*" if ev['loc'] else ""
+                        if ev['start'] == '00:00' and ev['end'] in ['23:59', '00:00']:
+                            out.append(f"• 📌 **{ev['title']}** *(Toute la journée)*{loc_str}")
+                        else:
+                            out.append(f"• ⏱️ **{ev['start']} - {ev['end']}** : **{ev['title']}**{loc_str}")
+                    out.append("")
+                else:
+                    out.append(f"Aucune réunion programmée pour aujourd'hui (**{today_fr}**).\n")
+
+                if upcoming_by_date:
+                    out.append("🗓️ **Vos prochaines réunions à venir :**")
+                    sorted_dates = sorted(upcoming_by_date.keys())[:5]
+                    for d_str in sorted_dates:
+                        dt_obj = datetime.datetime.strptime(d_str, '%Y-%m-%d').date()
+                        if d_str == tomorrow_str:
+                            date_label = f"Demain — {days_fr.get(dt_obj.strftime('%A'), '')} {dt_obj.day} {months_fr.get(dt_obj.month, '')}"
+                        else:
+                            date_label = f"{days_fr.get(dt_obj.strftime('%A'), '')} {dt_obj.day} {months_fr.get(dt_obj.month, '')}"
+
+                        out.append(f"\n• **{date_label}** :")
+                        for ev in upcoming_by_date[d_str]:
+                            loc_str = f" *(Lieu : {ev['loc']})*" if ev['loc'] else ""
+                            if ev['start'] == '00:00' and ev['end'] in ['23:59', '00:00']:
+                                out.append(f"   📌 **{ev['title']}** *(Journée entière)*{loc_str}")
+                            else:
+                                out.append(f"   ⏱️ **{ev['start']} - {ev['end']}** : **{ev['title']}**{loc_str}")
+
+                out.append("\n💡 *Dites « Ouvre Calendrier » ou « Ouvre Outlook » pour afficher votre planning à l'écran.*")
+                return "\n".join(out)
+        except Exception:
+            pass
+
+    # 2. Tenter via Microsoft Graph si configuré
     try:
         from . import outlook_graph
         if outlook_graph.is_configured():
             return outlook_graph.get_calendar_today()
     except Exception:
         pass
-    return "💡 Connectez votre jeton Microsoft Graph dans les paramètres de HAL pour afficher vos réunions du jour."
+
+    return "Aucune réunion trouvée dans votre calendrier Exchange pour le moment."
 
 def create_word_document() -> str:
     """Crée un nouveau document vierge dans Microsoft Word."""
