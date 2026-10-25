@@ -1,0 +1,31 @@
+{
+  "mcpServers": {
+    "spotify": {
+      "command": "npx",
+      "args": ["-y", "@varunneal/spotify-mcp"],
+      "env": {
+        "SPOTIPY_CLIENT_ID": "YOUR_SPOTIFY_CLIENT_ID",
+        "SPOTIPY_CLIENT_SECRET": "YOUR_SPOTIFY_CLIENT_SECRET",
+        "SPOTIPY_REDIRECT_URI": "http://localhost:8888/callback"
+      },
+      "description": "Contrôle de lecture Spotify, recherche de morceaux, playlists et gestion de file d'attente."
+    },
+    "gmail": {
+      "command": "npx",
+      "args": ["-y", "@gongool/mcp-gmail"],
+      "env": {
+        "GMAIL_CREDENTIALS_PATH": "~/.gemini/gmail-credentials.json"
+      },
+      "description": "Recherche d'emails, lecture de threads, création de brouillons et envoi sur Gmail."
+    },
+    "outlook": {
+      "command": "npx",
+      "args": ["-y", "@azure/microsoft-graph-mcp"],
+      "env": {
+        "AZURE_CLIENT_ID": "YOUR_AZURE_CLIENT_ID",
+        "AZURE_TENANT_ID": "common"
+      },
+      "description": "Accès aux emails Outlook, calendrier et contacts Microsoft 365."
+    }
+  }
+}

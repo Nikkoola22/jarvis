@@ -1,0 +1,23 @@
+{
+  "name": "jarvis-vercel",
+  "version": "1.0.0",
+  "description": "JARVIS Holographic AI Assistant deployed on Vercel with Z.ai GLM API",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "jarvis",
+    "ai",
+    "vercel",
+    "z-ai",
+    "glm",
+    "voice-assistant",
+    "hud"
+  ],
+  "author": "Nikkoola",
+  "license": "MIT"
+}

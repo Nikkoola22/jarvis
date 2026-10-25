@@ -1,0 +1,26 @@
+{
+  "active_model": "hermes3",
+  "default_model": "hermes3",
+  "available_models": ["hermes3", "llama3.2:3b"],
+  "ollama_url": "http://localhost:11434",
+  "hermes": {
+    "model": "hermes3",
+    "learning_loop": true,
+    "temperature": 0.3
+  },
+  "voice": {
+    "enabled": true,
+    "voice_name": "Thomas",
+    "rate": 185
+  },
+  "wake_word": "jarvis",
+  "hardware": {
+    "profile": "MacBookPro14,3",
+    "cpu": "Intel Core i7",
+    "dgpu": "AMD Radeon Pro 560",
+    "igpu": "Intel HD Graphics 630"
+  },
+  "user": {
+    "name": "Nikkoola"
+  }
+}

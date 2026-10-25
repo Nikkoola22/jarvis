@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JARVIS — Core Interface</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background: radial-gradient(circle at 50% 50%, #030a16 0%, #010409 60%, #000000 100%);
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      overflow: hidden;
+      user-select: none;
+    }
+    .font-hud { font-family: 'JetBrains Mono', monospace; }
+
+    /* Hologram Scanlines Effect */
+    .scanlines {
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 3px, 6px 100%;
+      pointer-events: none;
+    }
+
+    /* Holographic Glowing Glass */
+    .holo-card {
+      background: rgba(4, 19, 36, 0.5);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      box-shadow: 0 0 35px rgba(56, 189, 248, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Arc Reactor Glowing Pulse */
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.4; filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.4)); }
+      50% { transform: scale(1.05); opacity: 0.9; filter: drop-shadow(0 0 35px rgba(56, 189, 248, 0.9)); }
+      100% { transform: scale(0.95); opacity: 0.4; filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.4)); }
+    }
+    .pulsing-aura {
+      animation: pulse-ring 3.5s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen relative flex flex-col justify-between p-6">
+
+  <div class="scanlines absolute inset-0 z-40"></div>
+
+  <!-- Top Navigation & Telemetry HUD -->
+  <header class="relative z-30 max-w-6xl w-full mx-auto flex items-center justify-between border-b border-cyan-500/20 pb-4">
+    <div class="flex items-center gap-3">
+      <div class="w-3.5 h-3.5 rounded-full bg-cyan-400 animate-ping"></div>
+      <span class="font-hud font-extrabold tracking-widest text-base text-cyan-400 uppercase">J.A.R.V.I.S. // MARK 14,3</span>
+      <span class="text-xs px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-hud">LOCAL ENGINE</span>
+    </div>
+
+    <!-- Live Hardware Badges -->
+    <div class="flex items-center gap-4 text-xs font-hud">
+      <div class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-2">
+        <span class="text-slate-400">BATTERIE</span>
+        <strong id="badgeBattery" class="text-cyan-300">--%</strong>
+      </div>
+      <div class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-2">
+        <span class="text-slate-400">GPU</span>
+        <strong id="badgeGpu" class="text-indigo-300">Radeon 560</strong>
+      </div>
+      <div onclick="toggleActiveModel()" class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-2 cursor-pointer hover:border-cyan-400 transition-colors" title="Cliquer pour basculer de modèle (Hermes ⇄ Llama)">
+        <span class="text-slate-400">CERVEAU</span>
+        <strong id="badgeModel" class="text-amber-400">Hermes 3</strong>
+        <span class="text-[10px] text-cyan-400">⇄</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Central Holographic Canvas Aura -->
+  <main class="relative z-30 flex-1 flex flex-col items-center justify-center text-center my-auto">
+
+    <!-- Interactive Glowing Aura Canvas Container -->
+    <div class="relative w-[340px] h-[340px] md:w-[420px] md:h-[420px] flex items-center justify-center cursor-pointer group" onclick="toggleMicrophone()">
+      <!-- Background Dynamic Canvas -->
+      <canvas id="auraCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+
+      <!-- Central Arc Reactor Core Button -->
+      <div class="relative z-20 w-32 h-32 md:w-36 md:h-36 rounded-full holo-card flex flex-col items-center justify-center border-2 border-cyan-400/60 transition-all duration-500 group-hover:scale-105 group-hover:border-cyan-300 group-hover:shadow-[0_0_50px_rgba(56,189,248,0.7)] shadow-[0_0_30px_rgba(56,189,248,0.35)]">
+        <span id="coreIcon" class="text-4xl filter drop-shadow-[0_0_15px_rgba(56,189,248,0.8)] transition-transform duration-300 group-hover:scale-110">🎙️</span>
+        <span id="coreLabel" class="text-[10px] font-hud font-bold tracking-widest text-cyan-300 uppercase mt-2">CLIQUEZ POUR PARLER</span>
+      </div>
+    </div>
+
+    <!-- Live Status Pill -->
+    <div id="statusPill" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 mb-4 transition-all duration-300 shadow-md">
+      <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> SYSTÈME EN LIGNE // PRÊT
+    </div>
+
+    <!-- Speech Holographic Dialogue Box -->
+    <div class="holo-card rounded-2xl p-6 w-full max-w-2xl text-left border border-cyan-500/30 min-h-[90px] flex flex-col justify-center transition-all duration-300 shadow-2xl">
+      <div id="transcriptPrompt" class="text-xs font-hud text-cyan-400/80 mb-1 hidden"></div>
+      <p id="jarvisSpeech" class="text-slate-100 text-sm md:text-base leading-relaxed tracking-wide font-normal">
+        « Bonjour monsieur. L'interface holographique est en ligne. Cliquez sur le réacteur ou appuyez sur Espace pour me parler. »
+      </p>
+    </div>
+
+    <!-- Quick Commands Bar -->
+    <div class="flex flex-wrap items-center justify-center gap-2.5 mt-4 text-xs font-hud">
+      <button onclick="sendCommand('Donne-moi la télémétrie complète du Mac')" class="holo-card px-3.5 py-1.5 rounded-xl hover:bg-cyan-500/20 hover:border-cyan-400/60 transition-colors">
+        📊 Télémétrie
+      </button>
+      <button onclick="sendCommand('Quel temps fait-il à Paris ?')" class="holo-card px-3.5 py-1.5 rounded-xl hover:bg-cyan-500/20 hover:border-cyan-400/60 transition-colors">
+        🌧️ Météo
+      </button>
+      <button onclick="sendCommand('Bascule le mode sombre')" class="holo-card px-3.5 py-1.5 rounded-xl hover:bg-cyan-500/20 hover:border-cyan-400/60 transition-colors">
+        🌓 Dark Mode
+      </button>
+      <button onclick="sendCommand('Règle le volume à 50%')" class="holo-card px-3.5 py-1.5 rounded-xl hover:bg-cyan-500/20 hover:border-cyan-400/60 transition-colors">
+        🔊 Volume 50
+      </button>
+    </div>
+  </main>
+
+  <!-- Bottom Input Bar -->
+  <footer class="relative z-30 max-w-3xl w-full mx-auto">
+    <form onsubmit="handleManualInput(event)" class="relative flex items-center">
+      <input 
+        id="textInput" 
+        type="text" 
+        placeholder="Donner un ordre à JARVIS au clavier ou parler..."
+        class="w-full bg-slate-950/80 border border-cyan-500/30 rounded-2xl px-5 py-3.5 pr-32 text-sm focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/30 text-white placeholder-slate-500 font-sans shadow-xl backdrop-blur-md"
+      />
+      <button 
+        type="submit" 
+        class="absolute right-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center gap-1.5 font-hud"
+      >
+        TRANSMETTRE ↵
+      </button>
+    </form>
+  </footer>
+
+  <!-- Holographic Canvas Aura & Audio Engine -->
+  <script>
+    const canvas = document.getElementById('auraCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function resize() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      width = canvas.width = rect.width;
+      height = canvas.height = rect.height;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Sound Visualizer / FFT variables
+    let audioCtx = null;
+    let analyser = null;
+    let dataArray = null;
+    let isListening = false;
+    let isSpeaking = false;
+    let isProcessing = false;
+    let currentSpeechText = "";
+    let recognition = null;
+    let audioLevel = 0;
+
+    // Rings and particle aura parameters
+    let angle1 = 0;
+    let angle2 = 0;
+    let angle3 = 0;
+
+    function drawAura() {
+      ctx.clearRect(0, 0, width, height);
+      const cx = width / 2;
+      const cy = height / 2;
+
+      // Extract real audio frequency volume if microphone active
+      if (analyser && isListening) {
+        analyser.getByteFrequencyData(dataArray);
+        let sum = 0;
+        for (let i = 0; i < 32; i++) sum += dataArray[i];
+        audioLevel = (sum / 32) / 255; // 0.0 to 1.0
+      } else if (isSpeaking) {
+        audioLevel = 0.35 + Math.sin(Date.now() * 0.01) * 0.25;
+      } else {
+        audioLevel = Math.max(0, audioLevel * 0.92); // smooth decay
+      }
+
+      const baseR = Math.min(width, height) * 0.28;
+      const pulseR = baseR + (audioLevel * 45);
+
+      // 1. Concentric Holographic Waves
+      ctx.save();
+      ctx.translate(cx, cy);
+
+      // Outer Glow Halo
+      const gradient = ctx.createRadialGradient(0, 0, baseR * 0.6, 0, 0, pulseR * 1.4);
+      gradient.addColorStop(0, 'rgba(56, 189, 248, 0.02)');
+      gradient.addColorStop(0.6, isListening ? 'rgba(56, 189, 248, 0.18)' : (isSpeaking ? 'rgba(251, 146, 60, 0.18)' : 'rgba(56, 189, 248, 0.06)'));
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(0, 0, pulseR * 1.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Ring 1 (Smooth Rotating Dashes)
+      angle1 += 0.008 + (audioLevel * 0.04);
+      ctx.rotate(angle1);
+      ctx.strokeStyle = isListening ? '#38bdf8' : (isSpeaking ? '#fb923c' : 'rgba(56, 189, 248, 0.4)');
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([14, 18, 30, 10]);
+      ctx.beginPath();
+      ctx.arc(0, 0, pulseR * 1.15, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Ring 2 (Counter-rotating Arcs)
+      ctx.rotate(-angle1 * 2.2);
+      angle2 -= 0.012;
+      ctx.strokeStyle = isListening ? '#67e8f9' : (isSpeaking ? '#fdba74' : 'rgba(56, 189, 248, 0.3)');
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([40, 60, 20, 80]);
+      ctx.beginPath();
+      ctx.arc(0, 0, pulseR * 1.28, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Ring 3 (Outer Precision Tick Marks)
+      ctx.setLineDash([]);
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
+      ctx.lineWidth = 1;
+      const numTicks = 48;
+      for (let i = 0; i < numTicks; i++) {
+        const rad = (i / numTicks) * Math.PI * 2;
+        const tickLen = (i % 6 === 0) ? 9 + (audioLevel * 14) : 4;
+        const x1 = Math.cos(rad) * (pulseR * 1.38);
+        const y1 = Math.sin(rad) * (pulseR * 1.38);
+        const x2 = Math.cos(rad) * (pulseR * 1.38 + tickLen);
+        const y2 = Math.sin(rad) * (pulseR * 1.38 + tickLen);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+      requestAnimationFrame(drawAura);
+    }
+    requestAnimationFrame(drawAura);
+
+    // Microphone & Speech Recognition Setup
+    async function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 64;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const source = audioCtx.createMediaStreamSource(stream);
+          source.connect(analyser);
+        } catch (e) {
+          console.warn("Accès micro refusé ou non supporté :", e);
+        }
+      }
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+    }
+
+    function toggleMicrophone() {
+      if (isProcessing) return;
+      initAudio();
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("La reconnaissance vocale nécessite Safari ou Chrome.");
+        return;
+      }
+
+      if (!recognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'fr-FR';
+        recognition.continuous = false;
+        recognition.interimResults = true;
+
+        recognition.onstart = () => {
+          isListening = true;
+          currentSpeechText = "";
+          document.getElementById('coreIcon').textContent = "⚡";
+          document.getElementById('coreLabel').textContent = "ÉCOUTE EN COURS...";
+          document.getElementById('statusPill').innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> ÉCOUTE VOCALE ACTIVE`;
+          document.getElementById('statusPill').className = "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-red-500/10 text-red-300 border border-red-500/40 mb-4 shadow-lg shadow-red-500/20";
+        };
+
+        recognition.onresult = (event) => {
+          currentSpeechText = Array.from(event.results).map(r => r[0].transcript).join('');
+          const promptBox = document.getElementById('transcriptPrompt');
+          promptBox.classList.remove('hidden');
+          promptBox.textContent = `VOUS > ${currentSpeechText}`;
+        };
+
+        recognition.onend = () => {
+          isListening = false;
+          document.getElementById('coreIcon').textContent = "🎙️";
+          document.getElementById('coreLabel').textContent = "CLIQUEZ POUR PARLER";
+          
+          const textToSend = currentSpeechText.trim();
+          currentSpeechText = ""; // Réinitialisation immédiate pour éviter tout doublon
+
+          if (textToSend && !isProcessing) {
+            sendCommand(textToSend);
+          } else if (!isProcessing) {
+            document.getElementById('statusPill').innerHTML = `<span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> SYSTÈME EN LIGNE // PRÊT`;
+            document.getElementById('statusPill').className = "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 mb-4";
+          }
+        };
+
+        recognition.onerror = (e) => {
+          console.error("Speech error :", e);
+          isListening = false;
+        };
+      }
+
+      if (!isListening) {
+        try { recognition.start(); } catch (e) {}
+      } else {
+        try { recognition.stop(); } catch (e) {}
+      }
+    }
+
+    // Send query to local Jarvis backend
+    async function sendCommand(text) {
+      if (!text || isProcessing) return;
+      isProcessing = true;
+
+      const speechEl = document.getElementById('jarvisSpeech');
+      const statusPill = document.getElementById('statusPill');
+      const promptBox = document.getElementById('transcriptPrompt');
+
+      promptBox.classList.remove('hidden');
+      promptBox.textContent = `VOUS > ${text}`;
+
+      statusPill.innerHTML = `<span class="animate-spin inline-block">⚙️</span> CALCUL EN COURS (LLAMA 3.2)...`;
+      statusPill.className = "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-amber-500/20 text-amber-300 border border-amber-500/40 mb-4";
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: text })
+        });
+        const data = await response.json();
+        const reply = data.reply || "Ordre exécuté avec succès, monsieur.";
+
+        speechEl.textContent = `« ${reply} »`;
+
+        // Animation de l'aura pendant la parole (gérée par le backend say -v Thomas)
+        isSpeaking = true;
+        const estDurationMs = Math.max(2000, reply.length * 65);
+        setTimeout(() => { isSpeaking = false; }, estDurationMs);
+
+        statusPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> RÉPONSE TRANSMISE`;
+        statusPill.className = "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 mb-4 shadow-lg shadow-emerald-500/20";
+
+      } catch (err) {
+        speechEl.textContent = "Erreur de connexion avec le serveur Jarvis. Assurez-vous que le serveur local est actif.";
+      } finally {
+        setTimeout(() => { isProcessing = false; }, 500);
+      }
+    }
+
+    function speakBrowser(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'fr-FR';
+        utter.rate = 1.05;
+        utter.onend = () => { isSpeaking = false; };
+        utter.onerror = () => { isSpeaking = false; };
+        window.speechSynthesis.speak(utter);
+      } else {
+        setTimeout(() => { isSpeaking = false; }, 2000);
+      }
+    }
+
+    function handleManualInput(e) {
+      e.preventDefault();
+      const input = document.getElementById('textInput');
+      const val = input.value.trim();
+      if (val) {
+        sendCommand(val);
+        input.value = '';
+      }
+    }
+
+    // Spacebar shortcut to talk
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault();
+        toggleMicrophone();
+      }
+    });
+
+    let activeModelName = "Hermes 3";
+    function toggleActiveModel() {
+      if (activeModelName === "Hermes 3") {
+        activeModelName = "Llama 3.2";
+        document.getElementById('badgeModel').textContent = "Llama 3.2";
+        document.getElementById('badgeModel').className = "text-emerald-400";
+        sendCommand("active le mode llama");
+      } else {
+        activeModelName = "Hermes 3";
+        document.getElementById('badgeModel').textContent = "Hermes 3";
+        document.getElementById('badgeModel').className = "text-amber-400";
+        sendCommand("active le mode hermes");
+      }
+    }
+
+    // Fetch live hardware telemetry
+    async function updateTelemetry() {
+      try {
+        const r = await fetch('/api/telemetry');
+        const data = await r.json();
+        if (data.batterie) document.getElementById('badgeBattery').textContent = data.batterie.split(' ')[0];
+        if (data.gpu) document.getElementById('badgeGpu').textContent = data.gpu.includes('Radeon') ? 'Radeon 560' : 'Intel HD 630';
+      } catch (e) {}
+    }
+    setInterval(updateTelemetry, 15000);
+    updateTelemetry();
+  </script>
+</body>
+</html>

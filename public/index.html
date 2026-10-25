@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JARVIS Cloud — Mark Vercel & Z.ai</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      background: radial-gradient(circle at 50% 50%, #030b1b 0%, #01040a 60%, #000000 100%);
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      overflow-x: hidden;
+      user-select: none;
+    }
+    .font-hud { font-family: 'JetBrains Mono', monospace; }
+
+    /* Scanlines effect */
+    .scanlines {
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(56, 189, 248, 0.02), rgba(0, 255, 128, 0.01), rgba(56, 189, 248, 0.02));
+      background-size: 100% 3px, 6px 100%;
+      pointer-events: none;
+    }
+
+    /* Holographic card */
+    .holo-card {
+      background: rgba(4, 20, 40, 0.55);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      box-shadow: 0 0 35px rgba(56, 189, 248, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Glow pulse */
+    @keyframes pulse-ring {
+      0% { transform: scale(0.96); opacity: 0.5; filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.4)); }
+      50% { transform: scale(1.04); opacity: 0.95; filter: drop-shadow(0 0 35px rgba(56, 189, 248, 0.85)); }
+      100% { transform: scale(0.96); opacity: 0.5; filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.4)); }
+    }
+    .pulsing-aura {
+      animation: pulse-ring 3s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen relative flex flex-col justify-between p-4 md:p-6">
+
+  <div class="scanlines fixed inset-0 z-40"></div>
+
+  <!-- Top Navigation & Telemetry HUD -->
+  <header class="relative z-30 max-w-6xl w-full mx-auto flex flex-wrap items-center justify-between gap-4 border-b border-cyan-500/20 pb-4">
+    <div class="flex items-center gap-3">
+      <div class="w-3.5 h-3.5 rounded-full bg-cyan-400 animate-ping"></div>
+      <span class="font-hud font-extrabold tracking-widest text-base text-cyan-400 uppercase">J.A.R.V.I.S. // MARK VERCEL</span>
+      <span class="text-xs px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-hud">CLOUD GLM</span>
+    </div>
+
+    <!-- Live Telemetry & Config Badges -->
+    <div class="flex items-center gap-3 text-xs font-hud">
+      <div class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-2">
+        <span class="text-slate-400">RÉSEAU</span>
+        <strong id="badgeRegion" class="text-cyan-300">Vercel Edge</strong>
+      </div>
+      <div class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-2">
+        <span class="text-slate-400">CERVEAU</span>
+        <strong id="badgeModel" class="text-amber-400">Z.ai GLM-4</strong>
+      </div>
+      <button onclick="toggleConfigModal()" class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-cyan-300 hover:text-cyan-100 hover:border-cyan-400 transition-all cursor-pointer" title="Paramètres d'API Z.ai">
+        <span>⚙️</span>
+        <span class="hidden sm:inline">CONFIG</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Central Arc Reactor Core -->
+  <main class="relative z-30 flex-1 flex flex-col items-center justify-center text-center my-auto py-6">
+
+    <!-- Interactive Glowing Aura Canvas Container -->
+    <div class="relative w-[320px] h-[320px] md:w-[420px] md:h-[420px] flex items-center justify-center cursor-pointer group" onclick="toggleMicrophone()">
+      <!-- Background Dynamic Canvas -->
+      <canvas id="auraCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+
+      <!-- Central Arc Reactor Core Button -->
+      <div id="coreReactor" class="relative z-20 w-32 h-32 md:w-36 md:h-36 rounded-full holo-card flex flex-col items-center justify-center border-2 border-cyan-400/60 transition-all duration-500 group-hover:scale-105 group-hover:border-cyan-300 group-hover:shadow-[0_0_50px_rgba(56,189,248,0.7)] shadow-[0_0_30px_rgba(56,189,248,0.35)]">
+        <span id="coreIcon" class="text-4xl filter drop-shadow-[0_0_15px_rgba(56,189,248,0.8)] transition-transform duration-300 group-hover:scale-110">🎙️</span>
+        <span id="coreLabel" class="text-[10px] font-hud font-bold tracking-widest text-cyan-300 uppercase mt-2">CLIQUEZ POUR PARLER</span>
+      </div>
+    </div>
+
+    <!-- Live Status Pill -->
+    <div id="statusPill" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 mb-4 transition-all duration-300 shadow-md">
+      <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> SYSTÈME VERCEL EN LIGNE // PRÊT
+    </div>
+
+    <!-- Speech Holographic Dialogue Box -->
+    <div class="holo-card rounded-2xl p-6 w-full max-w-2xl text-left border border-cyan-500/30 min-h-[100px] flex flex-col justify-center transition-all duration-300 shadow-2xl">
+      <div id="transcriptPrompt" class="text-xs font-hud text-cyan-400/80 mb-1 hidden"></div>
+      <p id="jarvisSpeech" class="text-slate-100 text-sm md:text-base leading-relaxed tracking-wide font-normal">
+        « Bonjour monsieur Nikkoola. Le système JARVIS est connecté via Vercel et prêt à recevoir vos instructions. Cliquez sur le réacteur ou écrivez ci-dessous. »
+      </p>
+    </div>
+
+    <!-- Quick Action Chips -->
+    <div class="flex flex-wrap items-center justify-center gap-2 mt-4 max-w-2xl">
+      <button onclick="quickAction('Qui es-tu et quelles sont tes capacités ?')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-cyan-300/80 hover:text-cyan-100 hover:border-cyan-400 transition-all">🤖 Présentation</button>
+      <button onclick="quickAction('Donne-moi un plan stratégique pour ma journée.')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-cyan-300/80 hover:text-cyan-100 hover:border-cyan-400 transition-all">📅 Plan du jour</button>
+      <button onclick="quickAction('Quelle est la météo en France aujourd\'hui ?')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-cyan-300/80 hover:text-cyan-100 hover:border-cyan-400 transition-all">🌤️ Météo</button>
+      <button onclick="quickAction('Écris une fonction TypeScript propre pour appeler une API REST avec retry.')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-cyan-300/80 hover:text-cyan-100 hover:border-cyan-400 transition-all">⚡ Code TS</button>
+    </div>
+
+  </main>
+
+  <!-- Bottom Command Input Dock -->
+  <footer class="relative z-30 max-w-3xl w-full mx-auto">
+    <form onsubmit="handleManualInput(event)" class="holo-card rounded-2xl p-2 flex items-center gap-2 border border-cyan-500/30 focus-within:border-cyan-400 transition-all">
+      <input
+        type="text"
+        id="textInput"
+        placeholder="Donnez un ordre à Jarvis ou appuyez sur Espace pour parler..."
+        class="flex-1 bg-transparent px-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none font-hud"
+        autocomplete="off"
+      />
+      <button
+        type="submit"
+        class="bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/40 hover:border-cyan-300 px-5 py-2 rounded-xl text-xs font-hud font-bold uppercase tracking-wider transition-all duration-200"
+      >
+        Transmettre
+      </button>
+    </form>
+  </footer>
+
+  <!-- Modal Configuration Z.ai -->
+  <div id="configModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
+    <div class="holo-card max-w-md w-full rounded-2xl p-6 border border-cyan-500/50 relative shadow-[0_0_50px_rgba(56,189,248,0.3)]">
+      <div class="flex items-center justify-between border-b border-cyan-500/30 pb-3 mb-4">
+        <h3 class="font-hud font-bold text-cyan-400 text-sm tracking-wider flex items-center gap-2">
+          <span>⚙️</span> CONFIGURATION Z.AI & VERCEL
+        </h3>
+        <button onclick="toggleConfigModal()" class="text-slate-400 hover:text-white font-hud text-sm">✕</button>
+      </div>
+
+      <div class="space-y-4 text-xs font-hud">
+        <div>
+          <label class="block text-slate-300 mb-1">Clé API Z.ai (Bearer Token)</label>
+          <input
+            type="password"
+            id="cfgApiKey"
+            placeholder="Ex: 1234567890abcdef.abcdef..."
+            class="w-full bg-slate-900/80 border border-cyan-500/30 rounded-xl px-3 py-2 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400"
+          />
+          <span class="text-[10px] text-slate-500 mt-1 block">Laisser vide si configurée dans la variable d'env Vercel (ZAI_API_KEY).</span>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1">Modèle d'Intelligence Z.ai</label>
+          <select
+            id="cfgModel"
+            class="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-cyan-400"
+          >
+            <option value="glm-4-flash">GLM-4-Flash (Ultra-rapide, gratuit/économique)</option>
+            <option value="glm-4">GLM-4 (Équilibré & précis)</option>
+            <option value="glm-5.3">GLM-5.3 (Haute intelligence & raisonnement)</option>
+            <option value="glm-5.3-flash">GLM-5.3-Flash (Dernière génération rapide)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1">Synthèse Vocale (Voix du Navigateur)</label>
+          <div class="flex items-center gap-3">
+            <input type="checkbox" id="cfgVoiceEnabled" checked class="accent-cyan-400 w-4 h-4 cursor-pointer" />
+            <span class="text-slate-300">Activer la réponse vocale dans le navigateur</span>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-cyan-500/20 flex gap-2 justify-end">
+          <button onclick="toggleConfigModal()" class="px-4 py-2 rounded-xl border border-slate-700 text-slate-400 hover:text-white">Annuler</button>
+          <button onclick="saveConfig()" class="px-5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/40 font-bold">Sauvegarder</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Configuration persistante locale
+    const STORAGE_KEY = 'jarvis_zai_config';
+    let config = {
+      apiKey: '',
+      model: 'glm-4-flash',
+      voiceEnabled: true
+    };
+
+    function loadConfig() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          config = { ...config, ...JSON.parse(saved) };
+        }
+      } catch (e) {}
+      document.getElementById('cfgApiKey').value = config.apiKey || '';
+      document.getElementById('cfgModel').value = config.model || 'glm-4-flash';
+      document.getElementById('cfgVoiceEnabled').checked = config.voiceEnabled !== false;
+      document.getElementById('badgeModel').textContent = `Z.ai ${config.model.toUpperCase()}`;
+    }
+
+    function saveConfig() {
+      config.apiKey = document.getElementById('cfgApiKey').value.trim();
+      config.model = document.getElementById('cfgModel').value;
+      config.voiceEnabled = document.getElementById('cfgVoiceEnabled').checked;
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+      } catch (e) {}
+      document.getElementById('badgeModel').textContent = `Z.ai ${config.model.toUpperCase()}`;
+      toggleConfigModal();
+    }
+
+    function toggleConfigModal() {
+      const modal = document.getElementById('configModal');
+      modal.classList.toggle('hidden');
+    }
+
+    // Audio Visualizer Canvas
+    const canvas = document.getElementById('auraCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function resize() {
+      width = canvas.width = canvas.parentElement.clientWidth;
+      height = canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    let isListening = false;
+    let isSpeaking = false;
+    let isProcessing = false;
+    let audioLevel = 0;
+    let angle1 = 0;
+
+    function drawAura() {
+      ctx.clearRect(0, 0, width, height);
+      const cx = width / 2;
+      const cy = height / 2;
+
+      if (isSpeaking) {
+        audioLevel = 0.35 + Math.sin(Date.now() * 0.015) * 0.25;
+      } else if (isListening) {
+        audioLevel = 0.25 + Math.sin(Date.now() * 0.008) * 0.15;
+      } else {
+        audioLevel = Math.max(0, audioLevel * 0.94);
+      }
+
+      const baseR = Math.min(width, height) * 0.28;
+      const pulseR = baseR + (audioLevel * 45);
+
+      ctx.save();
+      ctx.translate(cx, cy);
+
+      // Glow halo
+      const gradient = ctx.createRadialGradient(0, 0, baseR * 0.6, 0, 0, pulseR * 1.4);
+      gradient.addColorStop(0, 'rgba(56, 189, 248, 0.02)');
+      gradient.addColorStop(0.6, isListening ? 'rgba(56, 189, 248, 0.25)' : (isSpeaking ? 'rgba(251, 146, 60, 0.22)' : 'rgba(56, 189, 248, 0.06)'));
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(0, 0, pulseR * 1.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Rotating dashed ring
+      angle1 += 0.008 + (audioLevel * 0.04);
+      ctx.rotate(angle1);
+      ctx.strokeStyle = isListening ? '#38bdf8' : (isSpeaking ? '#fb923c' : 'rgba(56, 189, 248, 0.45)');
+      ctx.lineWidth = 2;
+      ctx.setLineDash([14, 18, 30, 10]);
+      ctx.beginPath();
+      ctx.arc(0, 0, pulseR * 1.15, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Counter rotating ring
+      ctx.rotate(-angle1 * 2);
+      ctx.strokeStyle = isListening ? '#67e8f9' : (isSpeaking ? '#fdba74' : 'rgba(56, 189, 248, 0.3)');
+      ctx.lineWidth = 2;
+      ctx.setLineDash([40, 60, 20, 80]);
+      ctx.beginPath();
+      ctx.arc(0, 0, pulseR * 1.28, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Precision tick marks
+      ctx.setLineDash([]);
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
+      ctx.lineWidth = 1;
+      const numTicks = 48;
+      for (let i = 0; i < numTicks; i++) {
+        const rad = (i / numTicks) * Math.PI * 2;
+        const tickLen = (i % 6 === 0) ? 10 + (audioLevel * 14) : 4;
+        const x1 = Math.cos(rad) * (pulseR * 1.38);
+        const y1 = Math.sin(rad) * (pulseR * 1.38);
+        const x2 = Math.cos(rad) * (pulseR * 1.38 + tickLen);
+        const y2 = Math.sin(rad) * (pulseR * 1.38 + tickLen);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+      requestAnimationFrame(drawAura);
+    }
+    requestAnimationFrame(drawAura);
+
+    // Speech Recognition
+    let recognition = null;
+    let currentSpeechText = "";
+
+    function setupSpeechRecognition() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        console.warn("Reconnaissance vocale non disponible sur ce navigateur.");
+        return null;
+      }
+      const rec = new SpeechRec();
+      rec.continuous = false;
+      rec.interimResults = true;
+      rec.lang = 'fr-FR';
+
+      rec.onstart = () => {
+        isListening = true;
+        currentSpeechText = "";
+        updateReactorState("listening");
+      };
+
+      rec.onresult = (e) => {
+        let transcript = '';
+        for (let i = 0; i < e.results.length; i++) {
+          transcript += e.results[i][0].transcript;
+        }
+        currentSpeechText = transcript.trim();
+        const promptEl = document.getElementById('transcriptPrompt');
+        promptEl.classList.remove('hidden');
+        promptEl.textContent = `« ${currentSpeechText} »`;
+      };
+
+      rec.onerror = (e) => {
+        console.error("Erreur micro :", e.error);
+        isListening = false;
+        updateReactorState("idle");
+      };
+
+      rec.onend = () => {
+        isListening = false;
+        if (currentSpeechText && !isProcessing) {
+          sendCommand(currentSpeechText);
+          currentSpeechText = "";
+        } else {
+          updateReactorState("idle");
+        }
+      };
+
+      return rec;
+    }
+
+    function toggleMicrophone() {
+      if (isProcessing) return;
+      if (!recognition) recognition = setupSpeechRecognition();
+
+      if (!recognition) {
+        alert("La reconnaissance vocale nécessite un navigateur compatible (Chrome, Safari, Edge). Vous pouvez taper votre texte ci-dessous.");
+        return;
+      }
+
+      if (isListening) {
+        recognition.stop();
+      } else {
+        try {
+          recognition.start();
+        } catch (e) {
+          recognition.stop();
+        }
+      }
+    }
+
+    function updateReactorState(state) {
+      const core = document.getElementById('coreReactor');
+      const icon = document.getElementById('coreIcon');
+      const label = document.getElementById('coreLabel');
+      const statusPill = document.getElementById('statusPill');
+
+      if (state === "listening") {
+        core.className = "relative z-20 w-32 h-32 md:w-36 md:h-36 rounded-full holo-card flex flex-col items-center justify-center border-2 border-red-500 scale-105 shadow-[0_0_50px_rgba(239,68,68,0.7)] animate-pulse";
+        icon.textContent = "🔴";
+        label.textContent = "ÉCOUTE EN COURS...";
+        statusPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-400 animate-ping"></span> MICROPHONE ACTIF // PARLEZ`;
+        statusPill.className = "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-red-500/20 text-red-300 border border-red-500/40 mb-4 shadow-lg shadow-red-500/20";
+      } else if (state === "processing") {
+        core.className = "relative z-20 w-32 h-32 md:w-36 md:h-36 rounded-full holo-card flex flex-col items-center justify-center border-2 border-amber-400 scale-105 shadow-[0_0_50px_rgba(251,191,36,0.7)]";
+        icon.textContent = "⚡";
+        label.textContent = "ANALYSE Z.AI...";
+        statusPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-spin"></span> TRAITEMENT EN COURS...`;
+        statusPill.className = "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-amber-500/20 text-amber-300 border border-amber-500/40 mb-4 shadow-lg shadow-amber-500/20";
+      } else {
+        core.className = "relative z-20 w-32 h-32 md:w-36 md:h-36 rounded-full holo-card flex flex-col items-center justify-center border-2 border-cyan-400/60 shadow-[0_0_30px_rgba(56,189,248,0.35)]";
+        icon.textContent = "🎙️";
+        label.textContent = "CLIQUEZ POUR PARLER";
+        statusPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> SYSTÈME VERCEL EN LIGNE // PRÊT`;
+        statusPill.className = "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 mb-4 shadow-md";
+      }
+    }
+
+    // Communication avec le Serverless Function /api/chat
+    let chatHistory = [];
+
+    async function sendCommand(text) {
+      if (!text || isProcessing) return;
+      isProcessing = true;
+
+      const speechEl = document.getElementById('jarvisSpeech');
+      const promptEl = document.getElementById('transcriptPrompt');
+
+      promptEl.classList.remove('hidden');
+      promptEl.textContent = `« ${text} »`;
+      updateReactorState("processing");
+
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (config.apiKey) {
+          headers['X-ZAI-Key'] = config.apiKey;
+        }
+
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({
+            query: text,
+            history: chatHistory,
+            model: config.model
+          })
+        });
+
+        const data = await res.json();
+        const reply = data.reply || "À vos ordres, monsieur.";
+
+        chatHistory.push({ role: 'user', content: text });
+        chatHistory.push({ role: 'assistant', content: reply });
+        if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+
+        speechEl.textContent = `« ${reply} »`;
+
+        // Synthèse vocale navigateur si activée
+        if (config.voiceEnabled) {
+          speakBrowser(reply);
+        }
+
+        updateReactorState("idle");
+
+      } catch (err) {
+        speechEl.textContent = "Erreur de connexion avec le service JARVIS Vercel. Vérifiez la route /api/chat ou vos identifiants Z.ai.";
+        updateReactorState("idle");
+      } finally {
+        setTimeout(() => { isProcessing = false; }, 300);
+      }
+    }
+
+    function speakBrowser(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'fr-FR';
+      utter.rate = 1.05;
+
+      // Recherche d'une voix française naturelle
+      const voices = window.speechSynthesis.getVoices();
+      const frenchVoice = voices.find(v => v.lang.startsWith('fr') && (v.name.includes('Thomas') || v.name.includes('Google') || v.name.includes('Siri') || v.name.includes('Audrey'))) || voices.find(v => v.lang.startsWith('fr'));
+      if (frenchVoice) utter.voice = frenchVoice;
+
+      isSpeaking = true;
+      utter.onend = () => { isSpeaking = false; };
+      utter.onerror = () => { isSpeaking = false; };
+
+      window.speechSynthesis.speak(utter);
+    }
+
+    function handleManualInput(e) {
+      e.preventDefault();
+      const input = document.getElementById('textInput');
+      const val = input.value.trim();
+      if (val) {
+        sendCommand(val);
+        input.value = '';
+      }
+    }
+
+    function quickAction(promptText) {
+      document.getElementById('textInput').value = promptText;
+      sendCommand(promptText);
+    }
+
+    // Spacebar shortcut
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
+        e.preventDefault();
+        toggleMicrophone();
+      }
+    });
+
+    // Initialisation
+    loadConfig();
+
+    // Récupération de la télémétrie Vercel
+    async function updateCloudTelemetry() {
+      try {
+        const r = await fetch('/api/telemetry');
+        const data = await r.json();
+        if (data.region) document.getElementById('badgeRegion').textContent = data.region;
+      } catch (e) {}
+    }
+    updateCloudTelemetry();
+  </script>
+</body>
+</html>
