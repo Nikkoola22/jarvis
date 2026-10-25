@@ -281,6 +281,19 @@ def ask(query: str, history: list = None) -> tuple[str, str | None]:
             return connectors.compose_outlook_email(to=to_addr, subject=sub, body=msg_body), "outlook_compose"
         return tools.open_app("Microsoft Outlook"), "open_outlook"
 
+    # Recherche Légifrance & Droit Français (API PISTE / DILA)
+    if any(w in q_low for w in ["legifrance", "légifrance", "jurisprudence", "conseil d'état", "conseil d'etat", "cour de cassation"]) or \
+       (any(w in q_low for w in ["article", "art.", "loi", "code", "décret", "statut", "cgfp", "cgct", "rifseep", "citis"]) and \
+        any(w in q_low for w in ["cherche", "recherche", "consulte", "trouve", "que dit", "texte", "base", "légal", "juridique", "droit"])):
+        search_query = query
+        for trig in ["cherche sur légifrance", "cherche sur legifrance", "recherche sur légifrance", "recherche sur legifrance", "légifrance", "legifrance"]:
+            if trig in q_low:
+                search_query = query[q_low.index(trig) + len(trig):].strip(" :,-")
+                break
+        if not search_query.strip():
+            search_query = query
+        return connectors.search_legifrance_droit(search_query), "legifrance_search"
+
     # iTerm2 & Terminal
     if "iterm" in q_low or "iterm2" in q_low:
         cmd = ""

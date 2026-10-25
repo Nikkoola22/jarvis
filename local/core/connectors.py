@@ -568,3 +568,15 @@ def open_in_iterm(command: str = "") -> str:
         subprocess.run(["open", "-a", iterm_path])
         return "iTerm2 a été ouvert à l'écran, monsieur."
     return f"iTerm2 activé avec la commande « {command} »." if command else "iTerm2 ouvert à l'écran, monsieur."
+
+# ============================================================
+# 10. RECHERCHE JURIDIQUE & LÉGIFRANCE (API PISTE / DILA)
+# ============================================================
+def search_legifrance_droit(query: str) -> str:
+    """Consulte en temps réel l'API officielle Légifrance (PISTE/DILA) pour les textes de lois, codes et jurisprudences."""
+    try:
+        from . import legifrance_api
+        return legifrance_api.consult_legifrance(query)
+    except Exception as e:
+        return f"Erreur lors de la consultation Légifrance : {e}"
+

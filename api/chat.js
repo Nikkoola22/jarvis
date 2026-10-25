@@ -46,9 +46,12 @@ export default async function handler(req, res) {
       return res.status(400).json({ reply: "Je n'ai pas capté votre instruction, monsieur.", action: null });
     }
 
-    // 1. Tenter d'abord de router vers le Mac local via le tunnel Cloudflare pour les e-mails et actions système réelles
+    // 1. Tenter d'abord de router vers le Mac local via le tunnel Cloudflare pour les e-mails, planning, Légifrance et actions système réelles
     const qLower = query.toLowerCase();
-    const isLocalAction = qLower.includes('mail') || qLower.includes('outlook') || qLower.includes('exchange') || qLower.includes('terminal') || qLower.includes('ecran') || qLower.includes('écran');
+    const isLocalAction = qLower.includes('mail') || qLower.includes('outlook') || qLower.includes('exchange') ||
+                          qLower.includes('terminal') || qLower.includes('ecran') || qLower.includes('écran') ||
+                          qLower.includes('planning') || qLower.includes('agenda') || qLower.includes('reunion') || qLower.includes('réunion') ||
+                          qLower.includes('legifrance') || qLower.includes('légifrance') || qLower.includes('loi') || qLower.includes('cgfp') || qLower.includes('jurisprudence');
     if (isLocalAction && MAC_TUNNEL_FALLBACK) {
       try {
         const controller = new AbortController();

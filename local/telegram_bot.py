@@ -130,6 +130,7 @@ def handle_incoming_message(msg: dict):
             "📌 *Commandes rapides :*\n"
             "• `/agenda` : Consulter votre planning et vos prochaines réunions\n"
             "• `/mails` : Consulter vos e-mails pro Exchange en direct\n"
+            "• `/loi <terme>` : Rechercher sur l'API officielle Légifrance (CGFP, codes, arrêts)\n"
             "• `/ecran` : Recevoir une capture d'écran live du Mac\n"
             "• `/status` : Télémesure complète (CPU, Batterie, RAM)\n"
             "• `/repondre <nom> <texte>` : Rédiger un e-mail dans Outlook\n\n"
@@ -145,7 +146,16 @@ def handle_incoming_message(msg: dict):
         send_message(chat_id, res)
         return
 
-    # 3. Consultation des E-mails Professionnels Exchange
+    # 3. Consultation Légifrance & Droit Français (API PISTE)
+    if text.startswith("/loi") or text.startswith("/legifrance"):
+        parts = text.split(" ", 1)
+        q = parts[1].strip() if len(parts) > 1 else "Code général de la fonction publique"
+        send_message(chat_id, f"⚖️ *Interrogation de l'API officielle Légifrance (DILA) pour : « {q} »...*")
+        res = connectors.search_legifrance_droit(q)
+        send_message(chat_id, res)
+        return
+
+    # 4. Consultation des E-mails Professionnels Exchange
     if text == "/mails" or (any(w in text_lower for w in ["mail", "mails", "exchange"]) or ("outlook" in text_lower and not any(w in text_lower for w in ["planning", "agenda", "calendrier", "reunion", "réunion"]))):
         send_message(chat_id, "⏳ *Consultation de votre boîte professionnelle Exchange en cours...*")
         res = connectors.check_outlook_emails(count=6)
