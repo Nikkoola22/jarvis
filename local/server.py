@@ -73,12 +73,25 @@ class JarvisHandler(http.server.BaseHTTPRequestHandler):
                 self.end_headers()
             return
 
+        if parsed.path == "/api/outlook":
+            from core import outlook_graph, connectors
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            status_data = {
+                "configured": outlook_graph.is_configured(),
+                "outlook_installed": True,
+                "summary": connectors.check_outlook_emails(count=3)
+            }
+            self.wfile.write(json.dumps(status_data).encode("utf-8"))
+            return
+
         self.send_response(404)
         self.end_headers()
 
     def do_HEAD(self):
         parsed = urlparse(self.path)
-        if parsed.path in ["/", "/index.html", "/api/telemetry", "/api/screen"]:
+        if parsed.path in ["/", "/index.html", "/api/telemetry", "/api/screen", "/api/outlook"]:
             self.send_response(200)
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
@@ -235,6 +248,53 @@ class JarvisHandler(http.server.BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode("utf-8"))
             return
+
+        if parsed.path == "/api/outlook":
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
+            from core import outlook_graph, connectors
+            try:
+                payload = json.loads(body) if body else {}
+                action = payload.get("action", "check")
+                if action == "save_token":
+                    token = payload.get("token", "").strip()
+                    res = outlook_graph.set_access_token(token)
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.end_headers()
+                    self.wfile.write(json.dumps(res).encode("utf-8"))
+                    return
+                elif action == "send":
+                    res = connectors.compose_outlook_email(
+                        to=payload.get("to", ""),
+                        subject=payload.get("subject", ""),
+                        body=payload.get("body", "")
+                    )
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"reply": res}).encode("utf-8"))
+                    return
+                elif action == "calendar":
+                    res = connectors.get_outlook_calendar()
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"reply": res}).encode("utf-8"))
+                    return
+                else:
+                    res = connectors.check_outlook_emails()
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"reply": res}).encode("utf-8"))
+                    return
+            except Exception as e:
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode("utf-8"))
+                return
 
         self.send_response(404)
         self.end_headers()

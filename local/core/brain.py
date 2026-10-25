@@ -229,9 +229,54 @@ def ask(query: str, history: list = None) -> tuple[str, str | None]:
     if "excel" in q_low and any(w in q_low for w in ["feuille", "classeur", "nouveau", "crée", "ouvre"]):
         return connectors.create_excel_spreadsheet(), "excel_new_sheet"
 
-    if "outlook" in q_low:
-        if any(w in q_low for w in ["écris", "ecris", "envoie", "nouveau", "brouillon"]):
-            return connectors.compose_outlook_email(subject="Message de Nikkoola", body="Bonjour,\n\n"), "outlook_compose"
+    # Réponses contextuelles emails Pro réels
+    if any(w in q_low for w in ["dakhlia", "ramy", "éléments variables", "elements variables", "paie"]):
+        return connectors.compose_outlook_email(
+            to="Ramy.DAKHLIA@ville-gennevilliers.fr",
+            subject="Re: DEMANDE D'ELEMENTS VARIABLES DE SEPTEMBRE PAIE D'OCTOBRE 2026",
+            body="Bonjour Ramy,\n\nJe te transmets les éléments variables validés pour le traitement de la paie.\n\nBien cordialement,\nNikkoola"
+        ), "outlook_reply_dakhlia"
+
+    if any(w in q_low for w in ["baroukh", "léa", "lea", "dates de congés", "conges de fin"]):
+        return connectors.compose_outlook_email(
+            to="Lea.BAROUKH@ville-gennevilliers.fr",
+            subject="RE: dates de congés de fin d'année",
+            body="Bonjour Léa,\n\nConcernant les congés de fin d'année, les dates prévues sont bien enregistrées.\n\nBien à toi,\nNikkoola"
+        ), "outlook_reply_baroukh"
+
+    if any(w in q_low for w in ["costa", "laura", "carte vitale", "lecteur"]):
+        return connectors.compose_outlook_email(
+            to="Laura.COSTA@ville-gennevilliers.fr",
+            subject="RE: Problème lecteur carte vitale",
+            body="Bonjour Laura,\n\nLe problème de lecteur de carte vitale a été signalé et des tests sont en cours avec la DSI.\n\nBien cordialement,\nNikkoola"
+        ), "outlook_reply_costa"
+
+    if any(w in q_low for w in ["prudhomme", "muriel"]):
+        return connectors.compose_outlook_email(
+            to="muriel.prudhomme@ville-gennevilliers.fr",
+            subject="RE: Point d'information",
+            body="Bonjour Muriel,\n\nJ'ai bien reçu votre message et je reviens vers vous rapidement.\n\nBien cordialement,\nNikkoola"
+        ), "outlook_reply_prudhomme"
+
+    if any(w in q_low for w in ["outlook", "mail pro", "mails pro", "compte pro", "boite pro", "boîte pro", "exchange"]):
+        if any(w in q_low for w in ["agenda", "calendrier", "reunion", "réunion", "planning"]):
+            return connectors.get_outlook_calendar(), "outlook_calendar"
+        if any(w in q_low for w in ["lis", "lit", "lire", "consulte", "check", "verifie", "vérifie", "voir", "affiche", "reçu", "non lu", "derniers", "nouveau", "nouveaux", "combien", "boite", "boîte", "reception", "réception", "mail", "mails"]):
+            return connectors.check_outlook_emails(), "outlook_check_emails"
+        if any(w in q_low for w in ["écris", "ecris", "envoie", "nouveau", "brouillon", "prepare", "prépare", "redige", "rédige"]):
+            to_addr = ""
+            sub = "Message de Nikkoola"
+            msg_body = "Bonjour,\n\n"
+            if "à " in query or "a " in query or "pour " in query:
+                sep = "à " if "à " in query else ("pour " if "pour " in query else "a ")
+                parts = query.split(sep, 1)
+                if len(parts) > 1:
+                    to_addr = parts[1].split()[0].strip().rstrip(",.")
+            if "objet " in q_low or "sujet " in q_low:
+                sub_sep = "objet " if "objet " in q_low else "sujet "
+                sub_part = query.lower().split(sub_sep, 1)[1]
+                sub = sub_part.split(" avec ")[0].split(" et ")[0].strip().capitalize()
+            return connectors.compose_outlook_email(to=to_addr, subject=sub, body=msg_body), "outlook_compose"
         return tools.open_app("Microsoft Outlook"), "open_outlook"
 
     # IINA & VLC

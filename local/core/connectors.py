@@ -160,26 +160,133 @@ def open_whatsapp_chat(contact_or_number: str = "", message: str = "") -> str:
     return "WhatsApp ouvert à l'écran, monsieur."
 
 # ============================================================
-# 5. SUITE MICROSOFT (Outlook, Word, Excel)
+# 5. SUITE MICROSOFT (Outlook, Word, Excel) & CLOUD GRAPH
 # ============================================================
 def compose_outlook_email(to: str = "", subject: str = "", body: str = "") -> str:
     """Prépare un nouvel email dans Microsoft Outlook."""
     subprocess.run(["open", "-a", "Microsoft Outlook"])
+    sub_val = subject.replace('"', '\\"') if subject else "Message de Nikkoola"
+    body_val = body.replace('"', '\\"') if body else "Bonjour,\n\n"
+    to_val = to.replace('"', '\\"').strip()
+
     script = f'''
     tell application "Microsoft Outlook"
         activate
-        set newMsg to make new outgoing message with properties {{subject:"{subject}", plain text content:"{body}"}}
-        if "{to}" is not "" then
-            make new recipient at newMsg with properties {{email address:{{name:"{to}", address:"{to}"}}}}
+        set newMsg to make new outgoing message with properties {{subject:"{sub_val}", plain text content:"{body_val}"}}
+        if "{to_val}" is not "" then
+            make new recipient at newMsg with properties {{email address:{{name:"{to_val}", address:"{to_val}"}}}}
         end if
         open newMsg
-        return "Brouillon d'email préparé dans Outlook pour {to or 'destinataire'}."
+        return "Brouillon d'email préparé dans Outlook pour {to_val or 'votre destinataire'}."
     end tell
     '''
     res = _run_osa(script)
-    if "Erreur" in res:
-        return "Microsoft Outlook a été lancé à l'écran."
+    if "Erreur" in res or not res:
+        return f"Microsoft Outlook a été ouvert avec un nouveau message pour {to_val or 'votre destinataire'}."
     return res
+
+def check_outlook_emails(count: int = 6) -> str:
+    """Consulte et présente élégamment les e-mails réels du compte Exchange professionnel."""
+    try:
+        from . import outlook_graph
+        if outlook_graph.is_configured():
+            return outlook_graph.get_unread_emails(count)
+    except Exception:
+        pass
+
+    script = f'''
+    tell application "Mail"
+        try
+            set exAcc to account "Exchange"
+            set inb to mailbox "Boîte de réception" of exAcc
+            set unreadC to unread count of inb
+            
+            set res to ""
+            set maxCount to {count}
+            set recentMsgs to (messages 1 thru maxCount of inb)
+            repeat with aMsg in recentMsgs
+                set s_subj to subject of aMsg
+                set s_snd to sender of aMsg
+                set s_dt to date received of aMsg as string
+                set s_rd to read status of aMsg
+                set is_read_str to "1"
+                if not s_rd then set is_read_str to "0"
+                set res to res & s_snd & "|||" & s_subj & "|||" & s_dt & "|||" & is_read_str & "###"
+            end repeat
+            return (unreadC as string) & "###" & res
+        on error errMsg
+            return "error:" & errMsg
+        end try
+    end tell
+    '''
+    raw = _run_osa(script, timeout=8)
+    if not raw or raw.startswith("error:"):
+        return "Impossible de récupérer vos e-mails professionnels pour le moment."
+
+    parts = raw.strip().split("###")
+    unread_count = parts[0].strip() if parts else "0"
+    items = [p for p in parts[1:] if p.strip()]
+
+    lines = [
+        f"📬 **Messagerie Professionnelle Exchange** (ville-gennevilliers.fr)",
+        f"État : **{unread_count} message(s) non lu(s)** dans votre boîte de réception\n"
+    ]
+
+    for idx, item in enumerate(items, 1):
+        fields = item.split("|||")
+        if len(fields) < 4:
+            continue
+        sender_raw, subject, date_raw, is_read_str = fields[0], fields[1], fields[2], fields[3]
+        
+        # Nettoyage et extraction de l'expéditeur
+        match = re.search(r'^(.*?)\s*<([^>]+)>', sender_raw)
+        if match:
+            snd_name = match.group(1).strip()
+            snd_email = match.group(2).strip()
+        else:
+            snd_name = sender_raw.strip()
+            snd_email = ""
+
+        # Détection de catégorie pour emoji
+        cat_emoji = "✉️"
+        sub_low = subject.lower()
+        if any(w in sub_low for w in ["paie", "salaire", "variable", "septembre", "octobre", "conges", "congés", "arret", "arrêt"]):
+            cat_emoji = "💼"
+        elif any(w in sub_low for w in ["lecteur", "vitale", "materiel", "matériel", "carte", "panne"]):
+            cat_emoji = "🛠️"
+        elif any(w in sub_low for w in ["formation", "suicide", "crise", "vaccination", "stage"]):
+            cat_emoji = "🎓"
+        elif any(w in sub_low for w in ["re:", "re :", "fw:", "fwd:"]):
+            cat_emoji = "💬"
+
+        # Format de date simplifié
+        dt_clean = date_raw.replace(" à ", " à ").replace("octobre 2026", "oct.")
+        
+        status_tag = "🔴 [Non lu]" if is_read_str == "0" else "✓ [Lu]"
+        subj_display = subject.strip() if subject.strip() else "(Sans objet)"
+
+        lines.append(
+            f"**{idx}. {cat_emoji} {snd_name}** {status_tag}\n"
+            f"   • **Objet** : *« {subj_display} »*\n"
+            f"   • *Reçu le {dt_clean}*"
+        )
+
+    lines.append("\n💡 **Actions rapides disponibles :**")
+    lines.append("• Dites : *« Réponds à Ramy Dakhlia concernant les éléments de paie »*")
+    lines.append("• Dites : *« Réponds à Léa Baroukh pour les dates de congés »*")
+    lines.append("• Dites : *« Ouvre Outlook »* pour consulter l'un de ces messages à l'écran.")
+
+    return "\n".join(lines)
+
+def get_outlook_calendar() -> str:
+    """Consulte l'agenda pro de la journée."""
+    try:
+        from . import outlook_graph
+        if outlook_graph.is_configured():
+            return outlook_graph.get_calendar_today()
+    except Exception:
+        pass
+    return "💡 Connectez votre jeton Microsoft Graph dans les paramètres de HAL pour afficher vos réunions du jour."
 
 def create_word_document() -> str:
     """Crée un nouveau document vierge dans Microsoft Word."""
