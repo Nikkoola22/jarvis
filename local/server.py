@@ -74,6 +74,16 @@ class JarvisHandler(http.server.BaseHTTPRequestHandler):
         self.send_response(404)
         self.end_headers()
 
+    def do_HEAD(self):
+        parsed = urlparse(self.path)
+        if parsed.path in ["/", "/index.html", "/api/telemetry", "/api/screen"]:
+            self.send_response(200)
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            return
+        self.send_response(404)
+        self.end_headers()
+
     def do_POST(self):
         parsed = urlparse(self.path)
         if parsed.path == "/api/chat":

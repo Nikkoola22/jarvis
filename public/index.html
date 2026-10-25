@@ -389,6 +389,16 @@
     let macTelemetryData = null;
     let screenAutoRefreshTimer = null;
 
+    function cleanBridgeUrl(raw) {
+      if (!raw) return '';
+      const str = String(raw).trim();
+      const match = str.match(/https?:\/\/[^\s"'<>\u2500-\u257F│|]+/);
+      if (match) {
+        return match[0].replace(/\/$/, '');
+      }
+      return str.replace(/^[\s│|]+/, '').replace(/[\s│|]+$/, '').replace(/\/$/, '');
+    }
+
     function loadConfig() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -396,10 +406,11 @@
           config = { ...config, ...JSON.parse(saved) };
         }
       } catch (e) {}
+      config.macBridgeUrl = cleanBridgeUrl(config.macBridgeUrl) || 'http://localhost:8888';
       document.getElementById('cfgApiKey').value = config.apiKey || '';
       document.getElementById('cfgModel').value = config.model || 'glm-4-plus';
       document.getElementById('cfgVoiceEnabled').checked = config.voiceEnabled !== false;
-      document.getElementById('cfgMacBridgeUrl').value = config.macBridgeUrl || 'http://localhost:8888';
+      document.getElementById('cfgMacBridgeUrl').value = config.macBridgeUrl;
       document.getElementById('cfgRouteToMac').checked = config.routeToMac !== false;
       document.getElementById('badgeModel').textContent = `Z.ai ${config.model.toUpperCase()}`;
     }
@@ -408,7 +419,9 @@
       config.apiKey = document.getElementById('cfgApiKey').value.trim();
       config.model = document.getElementById('cfgModel').value;
       config.voiceEnabled = document.getElementById('cfgVoiceEnabled').checked;
-      config.macBridgeUrl = document.getElementById('cfgMacBridgeUrl').value.trim() || 'http://localhost:8888';
+      const rawBridge = document.getElementById('cfgMacBridgeUrl').value;
+      config.macBridgeUrl = cleanBridgeUrl(rawBridge) || 'http://localhost:8888';
+      document.getElementById('cfgMacBridgeUrl').value = config.macBridgeUrl;
       config.routeToMac = document.getElementById('cfgRouteToMac').checked;
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
@@ -816,14 +829,18 @@
     // ============================================================
     async function testMacBridgeConnection() {
       const statusEl = document.getElementById('macTestStatus');
-      const bridgeUrl = (document.getElementById('cfgMacBridgeUrl').value.trim() || 'http://localhost:8888').replace(/\/$/, '');
+      const input = document.getElementById('cfgMacBridgeUrl');
+      const cleaned = cleanBridgeUrl(input.value) || 'http://localhost:8888';
+      input.value = cleaned;
+      config.macBridgeUrl = cleaned;
+
       statusEl.textContent = "Test de liaison...";
       statusEl.className = "text-[10px] text-cyan-400 font-bold animate-pulse";
 
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 3500);
-        const r = await fetch(`${bridgeUrl}/api/telemetry`, { signal: controller.signal });
+        const timeout = setTimeout(() => controller.abort(), 4500);
+        const r = await fetch(`${cleaned}/api/telemetry`, { signal: controller.signal });
         clearTimeout(timeout);
         if (r.ok) {
           const data = await r.json();
@@ -841,14 +858,14 @@
     }
 
     async function checkMacBridge() {
-      const bridgeUrl = (config.macBridgeUrl || 'http://localhost:8888').replace(/\/$/, '');
+      const bridgeUrl = cleanBridgeUrl(config.macBridgeUrl) || 'http://localhost:8888';
       if (!bridgeUrl) {
         setMacLinkStatus(false);
         return null;
       }
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 2500);
+        const timeout = setTimeout(() => controller.abort(), 3500);
         const r = await fetch(`${bridgeUrl}/api/telemetry`, { signal: controller.signal });
         clearTimeout(timeout);
         if (r.ok) {
