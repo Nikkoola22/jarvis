@@ -54,7 +54,7 @@ export default async function handler(req, res) {
 
     // Configuration des paramètres Z.ai
     const baseUrl = (process.env.ZAI_BASE_URL || 'https://api.z.ai/api/paas/v4').replace(/\/$/, '');
-    const model = body.model || process.env.ZAI_MODEL || 'glm-4-flash';
+    const model = body.model || process.env.ZAI_MODEL || 'glm-4-plus';
 
     // Construction de la pile de messages
     const messages = [

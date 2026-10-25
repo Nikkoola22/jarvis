@@ -63,7 +63,7 @@
       </div>
       <div class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-2">
         <span class="text-slate-400">CERVEAU</span>
-        <strong id="badgeModel" class="text-amber-400">Z.ai GLM-4</strong>
+        <strong id="badgeModel" class="text-amber-400">Z.ai GLM-4-PLUS</strong>
       </div>
       <button onclick="toggleConfigModal()" class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-cyan-300 hover:text-cyan-100 hover:border-cyan-400 transition-all cursor-pointer" title="Paramètres d'API Z.ai">
         <span>⚙️</span>
@@ -157,10 +157,9 @@
             id="cfgModel"
             class="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-cyan-400"
           >
-            <option value="glm-4-flash">GLM-4-Flash (Ultra-rapide, gratuit/économique)</option>
-            <option value="glm-4">GLM-4 (Équilibré & précis)</option>
-            <option value="glm-5.3">GLM-5.3 (Haute intelligence & raisonnement)</option>
-            <option value="glm-5.3-flash">GLM-5.3-Flash (Dernière génération rapide)</option>
+            <option value="glm-4-plus">GLM-4-Plus (Recommandé — Rapide & Précis)</option>
+            <option value="glm-4.5">GLM-4.5 (Raisonnement avancé & MoE)</option>
+            <option value="glm-5">GLM-5 (Frontier — Puissance maximale & Raisonnement profond)</option>
           </select>
         </div>
 
@@ -185,7 +184,7 @@
     const STORAGE_KEY = 'jarvis_zai_config';
     let config = {
       apiKey: '',
-      model: 'glm-4-flash',
+      model: 'glm-4-plus',
       voiceEnabled: true
     };
 
@@ -197,7 +196,7 @@
         }
       } catch (e) {}
       document.getElementById('cfgApiKey').value = config.apiKey || '';
-      document.getElementById('cfgModel').value = config.model || 'glm-4-flash';
+      document.getElementById('cfgModel').value = config.model || 'glm-4-plus';
       document.getElementById('cfgVoiceEnabled').checked = config.voiceEnabled !== false;
       document.getElementById('badgeModel').textContent = `Z.ai ${config.model.toUpperCase()}`;
     }
