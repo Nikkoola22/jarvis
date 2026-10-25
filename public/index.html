@@ -89,20 +89,34 @@
       </div>
     </div>
 
-    <!-- Live Telemetry & Config Badges -->
-    <div class="flex items-center gap-2.5 text-xs font-hud">
-      <div class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-2">
+    <!-- Live Telemetry, Mac Bridge & Config Badges -->
+    <div class="flex items-center gap-2 text-xs font-hud">
+      <!-- Mac Link Status Pill -->
+      <div id="badgeMacLink" onclick="toggleConfigModal()" class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer text-slate-400 hover:border-cyan-500/40 transition-all" title="Liaison Mac Local — Cliquez pour configurer">
+        <span id="macLed" class="w-2 h-2 rounded-full bg-slate-500 transition-colors"></span>
+        <strong id="macLabel" class="text-slate-400 tracking-wide text-[10px]">MAC HORS LIGNE</strong>
+      </div>
+
+      <div class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 hidden sm:flex">
         <span class="text-slate-400">RÉSEAU</span>
         <strong id="badgeRegion" class="text-cyan-300 tracking-wide">Vercel Edge</strong>
       </div>
-      <div class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-2">
+
+      <div class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5">
         <span class="text-slate-400">CERVEAU</span>
         <strong id="badgeModel" class="text-amber-400 tracking-wide">Z.ai GLM-4-PLUS</strong>
       </div>
+
+      <!-- Live Screen Monitor Button -->
+      <button onclick="toggleScreenMonitor()" id="screenToggleBtn" class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 text-cyan-300 hover:text-white hover:border-cyan-400 transition-all cursor-pointer" title="Afficher et contrôler l'écran du Mac en direct">
+        <span>🖥️</span>
+        <span class="hidden md:inline font-hud">ÉCRAN MAC</span>
+      </button>
+
       <button onclick="toggleAudioMute()" id="muteBtn" class="holo-card px-2.5 py-1.5 rounded-xl text-cyan-300 hover:text-white transition-all cursor-pointer" title="Activer / Désactiver la voix">
         🔊
       </button>
-      <button onclick="toggleConfigModal()" class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-cyan-300 hover:text-cyan-100 hover:border-cyan-400 transition-all cursor-pointer" title="Paramètres d'API Z.ai">
+      <button onclick="toggleConfigModal()" class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 text-cyan-300 hover:text-cyan-100 hover:border-cyan-400 transition-all cursor-pointer" title="Paramètres d'API Z.ai & Pont Mac">
         <span>⚙️</span>
         <span class="hidden sm:inline">CONFIG</span>
       </button>
@@ -128,22 +142,22 @@
         </div>
       </div>
       <div class="holo-card p-3 rounded-xl border border-cyan-500/20 w-44">
-        <div class="text-slate-400 text-[10px] uppercase mb-0.5">Fusion Core Output</div>
-        <div class="text-cyan-300 font-bold text-sm font-sci">3.14 GJ/s</div>
-        <div class="text-[9px] text-emerald-400 mt-1">● CONFINEMENT STABLE</div>
+        <div class="text-slate-400 text-[10px] uppercase mb-0.5">Fusion Core / Batterie</div>
+        <div class="text-cyan-300 font-bold text-sm font-sci" id="panelBatteryLabel">3.14 GJ/s</div>
+        <div class="text-[9px] text-emerald-400 mt-1" id="panelBatterySub">● CONFINEMENT STABLE</div>
       </div>
     </div>
 
     <div class="absolute right-6 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-4 text-right font-hud text-[11px] text-cyan-400/80 pointer-events-none">
       <div class="holo-card p-3 rounded-xl border border-cyan-500/20 w-44">
-        <div class="text-slate-400 text-[10px] uppercase mb-0.5">Synapse Neurale</div>
-        <div class="text-amber-400 font-bold text-sm font-sci">GLM MATRIX</div>
-        <div class="text-[9px] text-cyan-300 mt-1">LATENCE : &lt;180ms</div>
+        <div class="text-slate-400 text-[10px] uppercase mb-0.5">Synapse Neurale / CPU</div>
+        <div class="text-amber-400 font-bold text-sm font-sci" id="panelCpuLabel">GLM MATRIX</div>
+        <div class="text-[9px] text-cyan-300 mt-1" id="panelCpuSub">LATENCE : &lt;180ms</div>
       </div>
       <div class="holo-card p-3 rounded-xl border border-cyan-500/20 w-44">
-        <div class="text-slate-400 text-[10px] uppercase mb-0.5">Statut Particules</div>
-        <div class="text-cyan-300 font-bold text-sm font-sci" id="particleCountLabel">140 ORBITAL</div>
-        <div class="text-[9px] text-cyan-400/70 mt-1">CHAMP ÉLECTROMAGNÉTIQUE</div>
+        <div class="text-slate-400 text-[10px] uppercase mb-0.5">Accélération GPU</div>
+        <div class="text-cyan-300 font-bold text-sm font-sci" id="panelGpuLabel">140 ORBITAL</div>
+        <div class="text-[9px] text-cyan-400/70 mt-1" id="panelGpuSub">CHAMP ÉLECTROMAGNÉTIQUE</div>
       </div>
     </div>
 
@@ -210,17 +224,117 @@
     </form>
   </footer>
 
-  <!-- Modal Configuration Z.ai -->
-  <div id="configModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md hidden">
-    <div class="holo-card max-w-md w-full rounded-2xl p-6 border border-cyan-500/50 relative shadow-[0_0_60px_rgba(56,189,248,0.35)]">
+  <!-- Live Mac Screen HUD Monitor & Remote Control Panel -->
+  <div id="screenMonitorModal" class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-black/90 backdrop-blur-md hidden">
+    <div class="holo-card max-w-5xl w-full rounded-2xl p-4 sm:p-5 border border-cyan-500/50 relative shadow-[0_0_80px_rgba(56,189,248,0.4)] flex flex-col max-h-[94vh]">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-cyan-500/30 pb-3 mb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]"></div>
+          <span class="font-sci font-bold text-cyan-300 text-xs sm:text-sm tracking-widest uppercase">MARK VII // LIVE TACTICAL SCREEN FEED</span>
+          <span id="screenStatusNote" class="text-[10px] font-hud text-slate-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/50 hidden sm:inline">1280x800</span>
+          <span id="screenTimestamp" class="text-[10px] font-hud text-cyan-400/90 ml-1">--:--:--</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="refreshScreenCapture()" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 font-hud text-xs flex items-center gap-1 transition-all" title="Actualiser la capture d'écran">
+            🔄 Rafraîchir
+          </button>
+          <button id="autoRefreshBtn" onclick="toggleAutoRefreshScreen()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 font-hud text-xs flex items-center gap-1 transition-all">
+            ⏱️ Auto: OFF
+          </button>
+          <button onclick="toggleScreenMonitor()" class="text-slate-400 hover:text-white font-hud text-base px-2 py-0.5 rounded hover:bg-slate-800 transition-all">✕</button>
+        </div>
+      </div>
+
+      <!-- Tactical Viewport with Holographic scanlines & reticles -->
+      <div class="relative flex-1 bg-black/90 rounded-xl overflow-hidden border border-cyan-500/30 flex items-center justify-center min-h-[280px]">
+        <!-- Hologram scanline effect -->
+        <div class="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,255,255,0.04)_50%)] bg-[length:100%_4px] pointer-events-none z-10"></div>
+        <div class="absolute inset-0 border border-cyan-400/20 pointer-events-none z-10"></div>
+        <!-- Corner brackets -->
+        <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-cyan-400 pointer-events-none z-10"></div>
+        <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-cyan-400 pointer-events-none z-10"></div>
+        <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-cyan-400 pointer-events-none z-10"></div>
+        <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-cyan-400 pointer-events-none z-10"></div>
+
+        <img id="screenImage" src="" alt="Capture Écran Mac" class="w-full h-auto max-h-[62vh] object-contain hidden z-0 transition-opacity duration-200" />
+        
+        <div id="screenPlaceholder" class="flex flex-col items-center justify-center text-center p-6 text-slate-400 font-hud text-xs space-y-3 z-0">
+          <div class="text-5xl animate-bounce">🖥️</div>
+          <div class="text-cyan-300 font-bold text-sm tracking-wider">LIAISON DU FLUX MAC EN ATTENTE</div>
+          <p class="max-w-md text-slate-400 text-[11px] leading-relaxed">
+            Pour afficher l'écran et contrôler votre Mac en direct :<br>
+            1. Vérifiez que <code class="text-cyan-300 bg-cyan-950 px-1.5 py-0.5 rounded">python3 server.py</code> tourne sur votre Mac.<br>
+            2. Si vous accédez à cette page via HTTPS Vercel, utilisez un tunnel sécurisé :<br>
+            <code class="text-amber-300 bg-black/60 px-2 py-0.5 rounded border border-amber-500/30">cloudflared tunnel --url http://localhost:8888</code>
+          </p>
+          <div class="flex gap-2">
+            <button onclick="refreshScreenCapture()" class="px-4 py-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/40 font-bold tracking-wide">
+              ⚡ Tenter la liaison
+            </button>
+            <button onclick="toggleConfigModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:text-white">
+              ⚙️ Configurer le Pont
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Mac Control Action Toolbar -->
+      <div class="mt-3 pt-2.5 border-t border-cyan-500/20 flex flex-wrap items-center justify-between gap-2 text-xs font-hud">
+        <div class="text-cyan-400 flex items-center gap-1.5 text-[11px] font-bold">
+          <span>⚡ CONTRÔLES MAC DIRECTS :</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-1.5">
+          <button onclick="executeQuickMacAction('mode sombre')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">🌙 Dark Mode</button>
+          <button onclick="executeQuickMacAction('volume 50')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">🔊 Vol 50%</button>
+          <button onclick="executeQuickMacAction('ouvre Safari')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">🧭 Safari</button>
+          <button onclick="executeQuickMacAction('musique pause')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">🎵 Pause / Play</button>
+          <button onclick="executeQuickMacAction('ouvre le Finder')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">📁 Finder</button>
+          <button onclick="executeQuickMacAction('verrouille')" class="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-[11px] transition-all">🔒 Verrouiller</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Configuration Z.ai & Pont Mac -->
+  <div id="configModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md hidden">
+    <div class="holo-card max-w-lg w-full rounded-2xl p-5 sm:p-6 border border-cyan-500/50 relative shadow-[0_0_60px_rgba(56,189,248,0.35)] max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-cyan-500/30 pb-3 mb-4">
         <h3 class="font-sci font-bold text-cyan-400 text-sm tracking-wider flex items-center gap-2">
-          <span>⚙️</span> CONFIGURATION Z.AI & VERCEL
+          <span>⚙️</span> CONFIGURATION SYSTÈME // CLOUD & PONT MAC
         </h3>
         <button onclick="toggleConfigModal()" class="text-slate-400 hover:text-white font-hud text-sm">✕</button>
       </div>
 
       <div class="space-y-4 text-xs font-hud">
+        <!-- Section Pont Mac Local -->
+        <div class="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="block text-cyan-300 font-bold tracking-wide">🖥️ Liaison Pont Mac (Contrôle & Écran)</label>
+            <span id="macTestStatus" class="text-[10px] text-slate-400">Non testé</span>
+          </div>
+          <div class="flex gap-2">
+            <input
+              type="text"
+              id="cfgMacBridgeUrl"
+              placeholder="http://localhost:8888 ou https://xxxx.trycloudflare.com"
+              class="flex-1 bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400 text-xs"
+            />
+            <button type="button" onclick="testMacBridgeConnection()" class="px-3 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/40 text-xs font-bold whitespace-nowrap transition-all">
+              Tester
+            </button>
+          </div>
+          <p class="text-[10px] text-slate-400 leading-relaxed">
+            • <strong class="text-cyan-300">En local</strong> : <code class="text-cyan-400">http://localhost:8888</code>.<br>
+            • <strong class="text-cyan-300">À distance sur Vercel HTTPS</strong> : Lancez sur votre Mac :<br>
+            <code class="text-amber-300 bg-black/60 px-1.5 py-0.5 rounded border border-amber-500/30">cloudflared tunnel --url http://localhost:8888</code> et collez l'URL HTTPS obtenue.
+          </p>
+          <div class="flex items-center justify-between pt-1 border-t border-cyan-500/20">
+            <span class="text-slate-300 text-[11px]">Routage prioritaire vers le Mac (actions & commandes)</span>
+            <input type="checkbox" id="cfgRouteToMac" checked class="accent-cyan-400 w-4 h-4 cursor-pointer" />
+          </div>
+        </div>
+
         <div>
           <label class="block text-slate-300 mb-1">Clé API Z.ai (Bearer Token)</label>
           <input
@@ -266,8 +380,14 @@
     let config = {
       apiKey: '',
       model: 'glm-4-plus',
-      voiceEnabled: true
+      voiceEnabled: true,
+      macBridgeUrl: 'http://localhost:8888',
+      routeToMac: true
     };
+
+    let isMacConnected = false;
+    let macTelemetryData = null;
+    let screenAutoRefreshTimer = null;
 
     function loadConfig() {
       try {
@@ -279,6 +399,8 @@
       document.getElementById('cfgApiKey').value = config.apiKey || '';
       document.getElementById('cfgModel').value = config.model || 'glm-4-plus';
       document.getElementById('cfgVoiceEnabled').checked = config.voiceEnabled !== false;
+      document.getElementById('cfgMacBridgeUrl').value = config.macBridgeUrl || 'http://localhost:8888';
+      document.getElementById('cfgRouteToMac').checked = config.routeToMac !== false;
       document.getElementById('badgeModel').textContent = `Z.ai ${config.model.toUpperCase()}`;
     }
 
@@ -286,11 +408,14 @@
       config.apiKey = document.getElementById('cfgApiKey').value.trim();
       config.model = document.getElementById('cfgModel').value;
       config.voiceEnabled = document.getElementById('cfgVoiceEnabled').checked;
+      config.macBridgeUrl = document.getElementById('cfgMacBridgeUrl').value.trim() || 'http://localhost:8888';
+      config.routeToMac = document.getElementById('cfgRouteToMac').checked;
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
       } catch (e) {}
       document.getElementById('badgeModel').textContent = `Z.ai ${config.model.toUpperCase()}`;
       toggleConfigModal();
+      checkMacBridge();
     }
 
     function toggleConfigModal() {
@@ -687,7 +812,178 @@
     }
 
     // ============================================================
-    // Communication API Z.ai Serverless
+    // Pont Mac Local — Télémétrie, Écran Live & Contrôles Directs
+    // ============================================================
+    async function testMacBridgeConnection() {
+      const statusEl = document.getElementById('macTestStatus');
+      const bridgeUrl = (document.getElementById('cfgMacBridgeUrl').value.trim() || 'http://localhost:8888').replace(/\/$/, '');
+      statusEl.textContent = "Test de liaison...";
+      statusEl.className = "text-[10px] text-cyan-400 font-bold animate-pulse";
+
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 3500);
+        const r = await fetch(`${bridgeUrl}/api/telemetry`, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (r.ok) {
+          const data = await r.json();
+          statusEl.textContent = `✅ Connecté : ${data.modele || 'MacBook Pro'}`;
+          statusEl.className = "text-[10px] text-emerald-400 font-bold";
+          setMacLinkStatus(true, data);
+          playSciFiChime('select');
+          return;
+        }
+      } catch (err) {
+        statusEl.textContent = "❌ Échec. Vérifiez python3 server.py ou le tunnel HTTPS.";
+        statusEl.className = "text-[10px] text-rose-400 font-bold";
+        setMacLinkStatus(false);
+      }
+    }
+
+    async function checkMacBridge() {
+      const bridgeUrl = (config.macBridgeUrl || 'http://localhost:8888').replace(/\/$/, '');
+      if (!bridgeUrl) {
+        setMacLinkStatus(false);
+        return null;
+      }
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 2500);
+        const r = await fetch(`${bridgeUrl}/api/telemetry`, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (r.ok) {
+          const data = await r.json();
+          setMacLinkStatus(true, data);
+          return data;
+        }
+      } catch (err) {}
+      setMacLinkStatus(false);
+      return null;
+    }
+
+    function setMacLinkStatus(connected, data = null) {
+      isMacConnected = connected;
+      macTelemetryData = data;
+      const led = document.getElementById('macLed');
+      const label = document.getElementById('macLabel');
+      const badge = document.getElementById('badgeMacLink');
+      
+      if (connected && data) {
+        led.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]";
+        label.className = "text-emerald-300 tracking-wide text-[10px]";
+        label.textContent = "MAC CONNECTÉ";
+        badge.title = `Mac en ligne : ${data.modele || ''}\nCPU: ${data.cpu || ''}\nBatterie: ${data.batterie || ''}`;
+
+        // Mise à jour des jauges HUD latérales
+        if (data.batterie) {
+          const bLabel = document.getElementById('panelBatteryLabel');
+          const bSub = document.getElementById('panelBatterySub');
+          if (bLabel) bLabel.textContent = data.batterie.split('(')[0].trim();
+          if (bSub) bSub.textContent = `● ${(data.batterie.split('(')[1] || 'SECTEUR').replace(')', '').toUpperCase()}`;
+        }
+        if (data.cpu) {
+          const cpuLabel = document.getElementById('panelCpuLabel');
+          const cpuSub = document.getElementById('panelCpuSub');
+          if (cpuLabel) cpuLabel.textContent = "INTEL i7";
+          if (cpuSub) cpuSub.textContent = (data.cpu.split('(')[1] || '8 THREADS').replace(')', '');
+        }
+        if (data.gpu) {
+          const gpuLabel = document.getElementById('panelGpuLabel');
+          const gpuSub = document.getElementById('panelGpuSub');
+          if (gpuLabel) gpuLabel.textContent = data.gpu.includes('Radeon') ? 'RADEON PRO' : 'INTEL HD 630';
+          if (gpuSub) gpuSub.textContent = data.gpu.includes('Radeon') ? 'dGPU HAUTE PERFORMANCE' : 'iGPU ÉCONOMIE';
+        }
+        if (data.modele) {
+          document.getElementById('badgeRegion').textContent = "MacBook Pro";
+        }
+      } else {
+        led.className = "w-2 h-2 rounded-full bg-slate-500";
+        label.className = "text-slate-400 tracking-wide text-[10px]";
+        label.textContent = "MAC HORS LIGNE";
+        badge.title = "Liaison Mac inactive. Cliquez pour configurer l'URL ou lancer server.py.";
+      }
+    }
+
+    // Gestion du Moniteur d'Écran en direct
+    function toggleScreenMonitor() {
+      const modal = document.getElementById('screenMonitorModal');
+      const isHidden = modal.classList.toggle('hidden');
+      if (!isHidden) {
+        playSciFiChime('select');
+        refreshScreenCapture();
+      } else {
+        if (screenAutoRefreshTimer) {
+          clearInterval(screenAutoRefreshTimer);
+          screenAutoRefreshTimer = null;
+          const btn = document.getElementById('autoRefreshBtn');
+          if (btn) {
+            btn.textContent = "⏱️ Auto: OFF";
+            btn.className = "px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 font-hud text-xs flex items-center gap-1 transition-all";
+          }
+        }
+      }
+    }
+
+    async function refreshScreenCapture() {
+      const bridgeUrl = (config.macBridgeUrl || 'http://localhost:8888').replace(/\/$/, '');
+      const img = document.getElementById('screenImage');
+      const placeholder = document.getElementById('screenPlaceholder');
+      const timestamp = document.getElementById('screenTimestamp');
+      const statusNote = document.getElementById('screenStatusNote');
+
+      if (statusNote) statusNote.textContent = "SCAN EN COURS...";
+      const testUrl = `${bridgeUrl}/api/screen?t=${Date.now()}`;
+      
+      const tempImg = new Image();
+      tempImg.onload = () => {
+        img.src = testUrl;
+        img.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+        const now = new Date();
+        timestamp.textContent = now.toLocaleTimeString();
+        if (statusNote) statusNote.textContent = `${tempImg.naturalWidth}x${tempImg.naturalHeight}`;
+        if (!isMacConnected) {
+          checkMacBridge();
+        }
+      };
+      tempImg.onerror = () => {
+        placeholder.classList.remove('hidden');
+        img.classList.add('hidden');
+        if (statusNote) statusNote.textContent = "FLUX DÉCONNECTÉ";
+      };
+      tempImg.src = testUrl;
+    }
+
+    function toggleAutoRefreshScreen() {
+      const btn = document.getElementById('autoRefreshBtn');
+      if (screenAutoRefreshTimer) {
+        clearInterval(screenAutoRefreshTimer);
+        screenAutoRefreshTimer = null;
+        btn.textContent = "⏱️ Auto: OFF";
+        btn.className = "px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 font-hud text-xs flex items-center gap-1 transition-all";
+      } else {
+        refreshScreenCapture();
+        screenAutoRefreshTimer = setInterval(refreshScreenCapture, 2500);
+        btn.textContent = "⏱️ Auto: ON (2.5s)";
+        btn.className = "px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400 font-hud text-xs flex items-center gap-1 font-bold animate-pulse";
+      }
+    }
+
+    async function executeQuickMacAction(command) {
+      playSciFiChime('select');
+      const speechEl = document.getElementById('jarvisSpeech');
+      speechEl.textContent = `Transmission de l'action système : « ${command} »...`;
+      
+      await sendCommand(command);
+      
+      const modal = document.getElementById('screenMonitorModal');
+      if (!modal.classList.contains('hidden')) {
+        setTimeout(refreshScreenCapture, 800);
+      }
+    }
+
+    // ============================================================
+    // Communication & Routage Hybride (Mac Direct + Z.ai Cloud)
     // ============================================================
     let chatHistory = [];
 
@@ -703,44 +999,76 @@
       promptEl.textContent = `« ${text} »`;
       updateReactorState("processing");
 
-      try {
-        const headers = { 'Content-Type': 'application/json' };
-        if (config.apiKey) {
-          headers['X-ZAI-Key'] = config.apiKey;
+      let reply = "";
+      let handledByMac = false;
+
+      // 1. Tenter l'exécution locale sur le Mac si le pont est actif et le routage activé
+      if (config.routeToMac && isMacConnected) {
+        const bridgeUrl = (config.macBridgeUrl || 'http://localhost:8888').replace(/\/$/, '');
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 8000);
+          const localRes = await fetch(`${bridgeUrl}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: text }),
+            signal: controller.signal
+          });
+          clearTimeout(timeout);
+          if (localRes.ok) {
+            const data = await localRes.json();
+            reply = data.reply || "Action exécutée sur votre Mac, monsieur.";
+            handledByMac = true;
+          }
+        } catch (e) {
+          console.warn("Liaison Mac injoignable, bascule vers le Cloud Z.ai :", e);
         }
+      }
 
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: headers,
-          body: JSON.stringify({
-            query: text,
-            history: chatHistory,
-            model: config.model
-          })
-        });
+      // 2. Si non traité par le Mac, passage par le Cloud Vercel Z.ai (GLM)
+      if (!handledByMac) {
+        try {
+          const headers = { 'Content-Type': 'application/json' };
+          if (config.apiKey) {
+            headers['X-ZAI-Key'] = config.apiKey;
+          }
 
-        const data = await res.json();
-        const reply = data.reply || "À vos ordres, monsieur.";
+          const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+              query: text,
+              history: chatHistory,
+              model: config.model
+            })
+          });
 
-        chatHistory.push({ role: 'user', content: text });
-        chatHistory.push({ role: 'assistant', content: reply });
-        if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
-
-        speechEl.textContent = `« ${reply} »`;
-        playSciFiChime('done');
-
-        // Synthèse vocale si activée
-        if (config.voiceEnabled) {
-          speakBrowser(reply);
+          const data = await res.json();
+          reply = data.reply || "À vos ordres, monsieur.";
+        } catch (err) {
+          reply = "Erreur de transmission avec le service JARVIS. Vérifiez votre connectivité réseau.";
         }
+      }
 
-        updateReactorState("idle");
+      chatHistory.push({ role: 'user', content: text });
+      chatHistory.push({ role: 'assistant', content: reply });
+      if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
 
-      } catch (err) {
-        speechEl.textContent = "Erreur de transmission avec le service JARVIS. Vérifiez votre connectivité réseau.";
-        updateReactorState("idle");
-      } finally {
-        setTimeout(() => { isProcessing = false; }, 300);
+      speechEl.textContent = `« ${reply} »`;
+      playSciFiChime('done');
+
+      // Synthèse vocale si activée
+      if (config.voiceEnabled) {
+        speakBrowser(reply);
+      }
+
+      updateReactorState("idle");
+      setTimeout(() => { isProcessing = false; }, 300);
+
+      // Si le moniteur d'écran est ouvert, rafraîchir l'écran pour constater le changement
+      const screenModal = document.getElementById('screenMonitorModal');
+      if (screenModal && !screenModal.classList.contains('hidden') && isMacConnected) {
+        setTimeout(refreshScreenCapture, 700);
       }
     }
 
@@ -788,15 +1116,9 @@
 
     // Initialisation
     loadConfig();
-
-    async function updateCloudTelemetry() {
-      try {
-        const r = await fetch('/api/telemetry');
-        const data = await r.json();
-        if (data.region) document.getElementById('badgeRegion').textContent = data.region;
-      } catch (e) {}
-    }
     updateCloudTelemetry();
+    checkMacBridge();
+    setInterval(checkMacBridge, 10000);
   </script>
 </body>
 </html>

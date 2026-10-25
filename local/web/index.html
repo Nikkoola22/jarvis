@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>JARVIS Local — Mark VII Arc Reactor (Hermes 3)</title>
+  <title>JARVIS — Mark VII Arc Reactor & Z.ai</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono:wght@400;600;700;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
   <style>
@@ -55,6 +55,7 @@
       pointer-events: none;
     }
 
+    /* Reactor Glow Pulse */
     @keyframes reactor-pulse {
       0% { filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.5)) drop-shadow(0 0 40px rgba(14, 165, 233, 0.3)); }
       50% { filter: drop-shadow(0 0 35px rgba(56, 189, 248, 0.85)) drop-shadow(0 0 70px rgba(14, 165, 233, 0.5)); }
@@ -82,27 +83,43 @@
       <div>
         <div class="flex items-center gap-2">
           <span class="font-sci font-black tracking-widest text-base text-cyan-400 uppercase">J.A.R.V.I.S.</span>
-          <span class="text-[10px] px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-hud tracking-wider">LOCAL MAC // MARK 14,3</span>
+          <span class="text-[10px] px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-hud tracking-wider">MARK VII // ARC CORE</span>
         </div>
-        <div class="text-[10px] font-hud text-slate-400 tracking-wider">HERMES 3 CORE • HARDWARE INTEGRATED</div>
+        <div class="text-[10px] font-hud text-slate-400 tracking-wider">STARK INDUSTRIES CYBERNETICS • SYSTEM v4.5</div>
       </div>
     </div>
 
-    <!-- Live Hardware Telemetry Badges -->
-    <div class="flex items-center gap-2.5 text-xs font-hud">
-      <div class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-2">
-        <span class="text-slate-400">BATTERIE</span>
-        <strong id="badgeBattery" class="text-cyan-300 tracking-wide">--%</strong>
+    <!-- Live Telemetry, Mac Bridge & Config Badges -->
+    <div class="flex items-center gap-2 text-xs font-hud">
+      <!-- Mac Link Status Pill -->
+      <div id="badgeMacLink" onclick="toggleConfigModal()" class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer text-slate-400 hover:border-cyan-500/40 transition-all" title="Liaison Mac Local — Cliquez pour configurer">
+        <span id="macLed" class="w-2 h-2 rounded-full bg-slate-500 transition-colors"></span>
+        <strong id="macLabel" class="text-slate-400 tracking-wide text-[10px]">MAC HORS LIGNE</strong>
       </div>
-      <div class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-2">
-        <span class="text-slate-400">GPU</span>
-        <strong id="badgeGpu" class="text-indigo-300 tracking-wide">Radeon 560</strong>
+
+      <div class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 hidden sm:flex">
+        <span class="text-slate-400">RÉSEAU</span>
+        <strong id="badgeRegion" class="text-cyan-300 tracking-wide">Vercel Edge</strong>
       </div>
-      <div onclick="toggleActiveModel()" class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-2 cursor-pointer hover:border-cyan-400 transition-colors" title="Cliquer pour basculer de modèle (Hermes ⇄ Llama)">
+
+      <div class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5">
         <span class="text-slate-400">CERVEAU</span>
-        <strong id="badgeModel" class="text-amber-400 tracking-wide">Hermes 3</strong>
-        <span class="text-[10px] text-cyan-400">⇄</span>
+        <strong id="badgeModel" class="text-amber-400 tracking-wide">Z.ai GLM-4-PLUS</strong>
       </div>
+
+      <!-- Live Screen Monitor Button -->
+      <button onclick="toggleScreenMonitor()" id="screenToggleBtn" class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 text-cyan-300 hover:text-white hover:border-cyan-400 transition-all cursor-pointer" title="Afficher et contrôler l'écran du Mac en direct">
+        <span>🖥️</span>
+        <span class="hidden md:inline font-hud">ÉCRAN MAC</span>
+      </button>
+
+      <button onclick="toggleAudioMute()" id="muteBtn" class="holo-card px-2.5 py-1.5 rounded-xl text-cyan-300 hover:text-white transition-all cursor-pointer" title="Activer / Désactiver la voix">
+        🔊
+      </button>
+      <button onclick="toggleConfigModal()" class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 text-cyan-300 hover:text-cyan-100 hover:border-cyan-400 transition-all cursor-pointer" title="Paramètres d'API Z.ai & Pont Mac">
+        <span>⚙️</span>
+        <span class="hidden sm:inline">CONFIG</span>
+      </button>
     </div>
   </header>
 
@@ -112,7 +129,7 @@
     <!-- HUD Lateral Telemetry Panels (Desktop) -->
     <div class="absolute left-6 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-4 text-left font-hud text-[11px] text-cyan-400/80 pointer-events-none">
       <div class="holo-card p-3 rounded-xl border border-cyan-500/20 w-44">
-        <div class="text-slate-400 text-[10px] uppercase mb-1">Spectre Audio</div>
+        <div class="text-slate-400 text-[10px] uppercase mb-1">Spectre Vocal</div>
         <div class="flex items-end gap-1 h-8" id="equalizerBars">
           <div class="w-1.5 bg-cyan-400/80 rounded-t h-2 transition-all duration-75"></div>
           <div class="w-1.5 bg-cyan-400/80 rounded-t h-4 transition-all duration-75"></div>
@@ -125,22 +142,22 @@
         </div>
       </div>
       <div class="holo-card p-3 rounded-xl border border-cyan-500/20 w-44">
-        <div class="text-slate-400 text-[10px] uppercase mb-0.5">Fusion Core Output</div>
-        <div class="text-cyan-300 font-bold text-sm font-sci">3.14 GJ/s</div>
-        <div class="text-[9px] text-emerald-400 mt-1">● CONFINEMENT STABLE</div>
+        <div class="text-slate-400 text-[10px] uppercase mb-0.5">Fusion Core / Batterie</div>
+        <div class="text-cyan-300 font-bold text-sm font-sci" id="panelBatteryLabel">3.14 GJ/s</div>
+        <div class="text-[9px] text-emerald-400 mt-1" id="panelBatterySub">● CONFINEMENT STABLE</div>
       </div>
     </div>
 
     <div class="absolute right-6 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-4 text-right font-hud text-[11px] text-cyan-400/80 pointer-events-none">
       <div class="holo-card p-3 rounded-xl border border-cyan-500/20 w-44">
-        <div class="text-slate-400 text-[10px] uppercase mb-0.5">Moteur Local</div>
-        <div class="text-amber-400 font-bold text-sm font-sci">HERMES 3 8B</div>
-        <div class="text-[9px] text-cyan-300 mt-1">OLLAMA ENGINE : 0ms NET</div>
+        <div class="text-slate-400 text-[10px] uppercase mb-0.5">Synapse Neurale / CPU</div>
+        <div class="text-amber-400 font-bold text-sm font-sci" id="panelCpuLabel">GLM MATRIX</div>
+        <div class="text-[9px] text-cyan-300 mt-1" id="panelCpuSub">LATENCE : &lt;180ms</div>
       </div>
       <div class="holo-card p-3 rounded-xl border border-cyan-500/20 w-44">
-        <div class="text-slate-400 text-[10px] uppercase mb-0.5">Champ Électromagnétique</div>
-        <div class="text-cyan-300 font-bold text-sm font-sci">140 PARTILCES</div>
-        <div class="text-[9px] text-cyan-400/70 mt-1">CONSTELLATION HARMONIQUE</div>
+        <div class="text-slate-400 text-[10px] uppercase mb-0.5">Accélération GPU</div>
+        <div class="text-cyan-300 font-bold text-sm font-sci" id="panelGpuLabel">140 ORBITAL</div>
+        <div class="text-[9px] text-cyan-400/70 mt-1" id="panelGpuSub">CHAMP ÉLECTROMAGNÉTIQUE</div>
       </div>
     </div>
 
@@ -152,9 +169,11 @@
       <!-- Central Arc Reactor Core Button (True Iron Man Architecture) -->
       <div id="coreReactor" class="relative z-20 w-32 h-32 md:w-40 md:h-40 rounded-full holo-card flex flex-col items-center justify-center border border-cyan-400/80 transition-all duration-500 group-hover:scale-105 glow-core shadow-[0_0_60px_rgba(56,189,248,0.45)]">
         
+        <!-- Rotating segmented coils -->
         <div class="absolute inset-2 rounded-full border border-dashed border-cyan-400/40 animate-[spin_20s_linear_infinite] pointer-events-none"></div>
         <div class="absolute inset-4 rounded-full border border-cyan-300/30 animate-[spin_12s_linear_infinite_reverse] pointer-events-none"></div>
 
+        <!-- Center Triangle Palladium Emitter -->
         <div class="relative flex flex-col items-center justify-center z-30">
           <span id="coreIcon" class="text-3xl md:text-4xl filter drop-shadow-[0_0_20px_rgba(56,189,248,0.9)] transition-transform duration-300 group-hover:scale-110">🎙️</span>
           <span id="coreLabel" class="text-[9px] md:text-[10px] font-hud font-bold tracking-widest text-cyan-300 uppercase mt-2">CLIQUEZ POUR PARLER</span>
@@ -164,7 +183,7 @@
 
     <!-- Live Status Pill -->
     <div id="statusPill" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 mb-3 transition-all duration-300 shadow-md">
-      <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> SYSTÈME LOCAL EN LIGNE // PRÊT
+      <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> SYSTÈME EN LIGNE // PRÊT
     </div>
 
     <!-- Speech Holographic Dialogue Box -->
@@ -172,16 +191,16 @@
       <div class="absolute top-0 left-0 w-16 h-[2px] bg-cyan-400"></div>
       <div id="transcriptPrompt" class="text-xs font-hud text-cyan-400/90 mb-1 hidden"></div>
       <p id="jarvisSpeech" class="text-slate-100 text-sm md:text-base leading-relaxed tracking-wide font-normal">
-        « Bonjour monsieur Nikkoola. L'interface holographique Mark VII est active. Cliquez sur le réacteur ou appuyez sur Espace pour me parler. »
+        « Bonjour monsieur Nikkoola. Tous les systèmes sont opérationnels. Le réacteur Arc est stabilisé et je suis à votre écoute. »
       </p>
     </div>
 
     <!-- Quick Action Chips -->
     <div class="flex flex-wrap items-center justify-center gap-2 mt-4 max-w-2xl">
-      <button onclick="quickAction('Fais un rapport de diagnostic complet du système.')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-cyan-300/80 hover:text-cyan-100 hover:border-cyan-400 transition-all">📊 Diagnostic</button>
-      <button onclick="quickAction('Quel morceau joue actuellement sur Spotify ?')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-cyan-300/80 hover:text-cyan-100 hover:border-cyan-400 transition-all">🎵 Spotify</button>
-      <button onclick="quickAction('Vérifie si j\'ai de nouveaux emails reçus.')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-cyan-300/80 hover:text-cyan-100 hover:border-cyan-400 transition-all">✉️ Emails</button>
-      <button onclick="quickAction('Bascule le système en mode sombre.')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-cyan-300/80 hover:text-cyan-100 hover:border-cyan-400 transition-all">🌙 Dark Mode</button>
+      <button onclick="quickAction('Qui es-tu et quelles sont tes capacités ?')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-cyan-300/80 hover:text-cyan-100 hover:border-cyan-400 transition-all">🤖 Présentation</button>
+      <button onclick="quickAction('Donne-moi un plan d\'action stratégique pour ma journée.')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-cyan-300/80 hover:text-cyan-100 hover:border-cyan-400 transition-all">📅 Plan du jour</button>
+      <button onclick="quickAction('Analyse l\'architecture d\'Iron Man et détaille le fonctionnement de son réacteur Arc.')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-cyan-300/80 hover:text-cyan-100 hover:border-cyan-400 transition-all">⚛️ Réacteur Arc</button>
+      <button onclick="quickAction('Génère un script Python expert pour requêter une API en streaming asynchrone.')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-cyan-300/80 hover:text-cyan-100 hover:border-cyan-400 transition-all">⚡ Script Python</button>
     </div>
 
   </main>
@@ -205,8 +224,269 @@
     </form>
   </footer>
 
+  <!-- Live Mac Screen HUD Monitor & Remote Control Panel -->
+  <div id="screenMonitorModal" class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-black/90 backdrop-blur-md hidden">
+    <div class="holo-card max-w-5xl w-full rounded-2xl p-4 sm:p-5 border border-cyan-500/50 relative shadow-[0_0_80px_rgba(56,189,248,0.4)] flex flex-col max-h-[94vh]">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-cyan-500/30 pb-3 mb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]"></div>
+          <span class="font-sci font-bold text-cyan-300 text-xs sm:text-sm tracking-widest uppercase">MARK VII // LIVE TACTICAL SCREEN FEED</span>
+          <span id="screenStatusNote" class="text-[10px] font-hud text-slate-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/50 hidden sm:inline">1280x800</span>
+          <span id="screenTimestamp" class="text-[10px] font-hud text-cyan-400/90 ml-1">--:--:--</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="refreshScreenCapture()" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 font-hud text-xs flex items-center gap-1 transition-all" title="Actualiser la capture d'écran">
+            🔄 Rafraîchir
+          </button>
+          <button id="autoRefreshBtn" onclick="toggleAutoRefreshScreen()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 font-hud text-xs flex items-center gap-1 transition-all">
+            ⏱️ Auto: OFF
+          </button>
+          <button onclick="toggleScreenMonitor()" class="text-slate-400 hover:text-white font-hud text-base px-2 py-0.5 rounded hover:bg-slate-800 transition-all">✕</button>
+        </div>
+      </div>
+
+      <!-- Tactical Viewport with Holographic scanlines & reticles -->
+      <div class="relative flex-1 bg-black/90 rounded-xl overflow-hidden border border-cyan-500/30 flex items-center justify-center min-h-[280px]">
+        <!-- Hologram scanline effect -->
+        <div class="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,255,255,0.04)_50%)] bg-[length:100%_4px] pointer-events-none z-10"></div>
+        <div class="absolute inset-0 border border-cyan-400/20 pointer-events-none z-10"></div>
+        <!-- Corner brackets -->
+        <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-cyan-400 pointer-events-none z-10"></div>
+        <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-cyan-400 pointer-events-none z-10"></div>
+        <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-cyan-400 pointer-events-none z-10"></div>
+        <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-cyan-400 pointer-events-none z-10"></div>
+
+        <img id="screenImage" src="" alt="Capture Écran Mac" class="w-full h-auto max-h-[62vh] object-contain hidden z-0 transition-opacity duration-200" />
+        
+        <div id="screenPlaceholder" class="flex flex-col items-center justify-center text-center p-6 text-slate-400 font-hud text-xs space-y-3 z-0">
+          <div class="text-5xl animate-bounce">🖥️</div>
+          <div class="text-cyan-300 font-bold text-sm tracking-wider">LIAISON DU FLUX MAC EN ATTENTE</div>
+          <p class="max-w-md text-slate-400 text-[11px] leading-relaxed">
+            Pour afficher l'écran et contrôler votre Mac en direct :<br>
+            1. Vérifiez que <code class="text-cyan-300 bg-cyan-950 px-1.5 py-0.5 rounded">python3 server.py</code> tourne sur votre Mac.<br>
+            2. Si vous accédez à cette page via HTTPS Vercel, utilisez un tunnel sécurisé :<br>
+            <code class="text-amber-300 bg-black/60 px-2 py-0.5 rounded border border-amber-500/30">cloudflared tunnel --url http://localhost:8888</code>
+          </p>
+          <div class="flex gap-2">
+            <button onclick="refreshScreenCapture()" class="px-4 py-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/40 font-bold tracking-wide">
+              ⚡ Tenter la liaison
+            </button>
+            <button onclick="toggleConfigModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:text-white">
+              ⚙️ Configurer le Pont
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Mac Control Action Toolbar -->
+      <div class="mt-3 pt-2.5 border-t border-cyan-500/20 flex flex-wrap items-center justify-between gap-2 text-xs font-hud">
+        <div class="text-cyan-400 flex items-center gap-1.5 text-[11px] font-bold">
+          <span>⚡ CONTRÔLES MAC DIRECTS :</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-1.5">
+          <button onclick="executeQuickMacAction('mode sombre')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">🌙 Dark Mode</button>
+          <button onclick="executeQuickMacAction('volume 50')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">🔊 Vol 50%</button>
+          <button onclick="executeQuickMacAction('ouvre Safari')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">🧭 Safari</button>
+          <button onclick="executeQuickMacAction('musique pause')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">🎵 Pause / Play</button>
+          <button onclick="executeQuickMacAction('ouvre le Finder')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">📁 Finder</button>
+          <button onclick="executeQuickMacAction('verrouille')" class="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-[11px] transition-all">🔒 Verrouiller</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Configuration Z.ai & Pont Mac -->
+  <div id="configModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md hidden">
+    <div class="holo-card max-w-lg w-full rounded-2xl p-5 sm:p-6 border border-cyan-500/50 relative shadow-[0_0_60px_rgba(56,189,248,0.35)] max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-cyan-500/30 pb-3 mb-4">
+        <h3 class="font-sci font-bold text-cyan-400 text-sm tracking-wider flex items-center gap-2">
+          <span>⚙️</span> CONFIGURATION SYSTÈME // CLOUD & PONT MAC
+        </h3>
+        <button onclick="toggleConfigModal()" class="text-slate-400 hover:text-white font-hud text-sm">✕</button>
+      </div>
+
+      <div class="space-y-4 text-xs font-hud">
+        <!-- Section Pont Mac Local -->
+        <div class="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="block text-cyan-300 font-bold tracking-wide">🖥️ Liaison Pont Mac (Contrôle & Écran)</label>
+            <span id="macTestStatus" class="text-[10px] text-slate-400">Non testé</span>
+          </div>
+          <div class="flex gap-2">
+            <input
+              type="text"
+              id="cfgMacBridgeUrl"
+              placeholder="http://localhost:8888 ou https://xxxx.trycloudflare.com"
+              class="flex-1 bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400 text-xs"
+            />
+            <button type="button" onclick="testMacBridgeConnection()" class="px-3 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/40 text-xs font-bold whitespace-nowrap transition-all">
+              Tester
+            </button>
+          </div>
+          <p class="text-[10px] text-slate-400 leading-relaxed">
+            • <strong class="text-cyan-300">En local</strong> : <code class="text-cyan-400">http://localhost:8888</code>.<br>
+            • <strong class="text-cyan-300">À distance sur Vercel HTTPS</strong> : Lancez sur votre Mac :<br>
+            <code class="text-amber-300 bg-black/60 px-1.5 py-0.5 rounded border border-amber-500/30">cloudflared tunnel --url http://localhost:8888</code> et collez l'URL HTTPS obtenue.
+          </p>
+          <div class="flex items-center justify-between pt-1 border-t border-cyan-500/20">
+            <span class="text-slate-300 text-[11px]">Routage prioritaire vers le Mac (actions & commandes)</span>
+            <input type="checkbox" id="cfgRouteToMac" checked class="accent-cyan-400 w-4 h-4 cursor-pointer" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1">Clé API Z.ai (Bearer Token)</label>
+          <input
+            type="password"
+            id="cfgApiKey"
+            placeholder="Clé préconfigurée dans Vercel (ou saisie manuelle)"
+            class="w-full bg-slate-900/90 border border-cyan-500/30 rounded-xl px-3 py-2 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-400"
+          />
+          <span class="text-[10px] text-slate-500 mt-1 block">Laisser vide pour utiliser la variable d'environnement Vercel (ZAI_API_KEY).</span>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1">Modèle d'Intelligence Z.ai</label>
+          <select
+            id="cfgModel"
+            class="w-full bg-slate-900 border border-cyan-500/30 rounded-xl px-3 py-2 text-slate-100 focus:outline-none focus:border-cyan-400"
+          >
+            <option value="glm-4-plus">GLM-4-Plus (Recommandé — Rapide & Précis)</option>
+            <option value="glm-4.5">GLM-4.5 (Raisonnement avancé & MoE)</option>
+            <option value="glm-5">GLM-5 (Frontier — Raisonnement en profondeur)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1">Synthèse Vocale (Voix Navigateur)</label>
+          <div class="flex items-center gap-3">
+            <input type="checkbox" id="cfgVoiceEnabled" checked class="accent-cyan-400 w-4 h-4 cursor-pointer" />
+            <span class="text-slate-300">Activer la réponse audio parlée</span>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-cyan-500/20 flex gap-2 justify-end">
+          <button onclick="toggleConfigModal()" class="px-4 py-2 rounded-xl border border-slate-700 text-slate-400 hover:text-white">Annuler</button>
+          <button onclick="saveConfig()" class="px-5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/40 font-bold">Sauvegarder</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // Audio Visualizer Canvas
+    // Configuration persistante locale
+    const STORAGE_KEY = 'jarvis_zai_config';
+    let config = {
+      apiKey: '',
+      model: 'glm-4-plus',
+      voiceEnabled: true,
+      macBridgeUrl: 'http://localhost:8888',
+      routeToMac: true
+    };
+
+    let isMacConnected = false;
+    let macTelemetryData = null;
+    let screenAutoRefreshTimer = null;
+
+    function loadConfig() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          config = { ...config, ...JSON.parse(saved) };
+        }
+      } catch (e) {}
+      document.getElementById('cfgApiKey').value = config.apiKey || '';
+      document.getElementById('cfgModel').value = config.model || 'glm-4-plus';
+      document.getElementById('cfgVoiceEnabled').checked = config.voiceEnabled !== false;
+      document.getElementById('cfgMacBridgeUrl').value = config.macBridgeUrl || 'http://localhost:8888';
+      document.getElementById('cfgRouteToMac').checked = config.routeToMac !== false;
+      document.getElementById('badgeModel').textContent = `Z.ai ${config.model.toUpperCase()}`;
+    }
+
+    function saveConfig() {
+      config.apiKey = document.getElementById('cfgApiKey').value.trim();
+      config.model = document.getElementById('cfgModel').value;
+      config.voiceEnabled = document.getElementById('cfgVoiceEnabled').checked;
+      config.macBridgeUrl = document.getElementById('cfgMacBridgeUrl').value.trim() || 'http://localhost:8888';
+      config.routeToMac = document.getElementById('cfgRouteToMac').checked;
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+      } catch (e) {}
+      document.getElementById('badgeModel').textContent = `Z.ai ${config.model.toUpperCase()}`;
+      toggleConfigModal();
+      checkMacBridge();
+    }
+
+    function toggleConfigModal() {
+      const modal = document.getElementById('configModal');
+      modal.classList.toggle('hidden');
+    }
+
+    function toggleAudioMute() {
+      config.voiceEnabled = !config.voiceEnabled;
+      document.getElementById('cfgVoiceEnabled').checked = config.voiceEnabled;
+      document.getElementById('muteBtn').textContent = config.voiceEnabled ? '🔊' : '🔇';
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(config)); } catch(e){}
+    }
+
+    // ============================================================
+    // Web Audio Synthesizer (Sci-Fi Sound Effects)
+    // ============================================================
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playSciFiChime(type = 'activate') {
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        const now = ctx.currentTime;
+        if (type === 'activate') {
+          // Double futuristic high beep
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(880, now);
+          osc.frequency.exponentialRampToValueAtTime(1760, now + 0.12);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+          osc.start(now);
+          osc.stop(now + 0.22);
+        } else if (type === 'process') {
+          // Low reactor pulse
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(220, now);
+          osc.frequency.linearRampToValueAtTime(440, now + 0.25);
+          gain.gain.setValueAtTime(0.05, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        } else if (type === 'done') {
+          // Success chime
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(1320, now);
+          osc.frequency.setValueAtTime(1760, now + 0.1);
+          gain.gain.setValueAtTime(0.06, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        }
+      } catch (e) {}
+    }
+
+    // ============================================================
+    // Advanced Holographic Arc Reactor & Particle Swarm Engine
+    // ============================================================
     const canvas = document.getElementById('auraCanvas');
     const ctx = canvas.getContext('2d');
     let width, height;
@@ -219,6 +499,7 @@
     window.addEventListener('resize', resize);
     resize();
 
+    // Mouse Parallax Interaction
     let mouse = { x: width / 2, y: height / 2, targetX: width / 2, targetY: height / 2 };
     window.addEventListener('mousemove', (e) => {
       const rect = canvas.getBoundingClientRect();
@@ -231,7 +512,7 @@
     let isProcessing = false;
     let audioLevel = 0;
 
-    // 140 Particles
+    // Generate Swarm of 140 Particles orbiting the Arc Reactor
     const PARTICLE_COUNT = 140;
     const particles = [];
     for (let i = 0; i < PARTICLE_COUNT; i++) {
@@ -245,7 +526,7 @@
         size: 1.2 + Math.random() * 2.8,
         color: Math.random() > 0.15 ? '#38bdf8' : (Math.random() > 0.5 ? '#67e8f9' : '#fbbf24'),
         alpha: 0.3 + Math.random() * 0.7,
-        z: Math.random() * 2 - 1
+        z: Math.random() * 2 - 1 // 3D depth
       });
     }
 
@@ -258,11 +539,13 @@
       const cx = width / 2;
       const cy = height / 2;
 
+      // Mouse smoothing
       mouse.x += (mouse.targetX - mouse.x) * 0.05;
       mouse.y += (mouse.targetY - mouse.y) * 0.05;
       const offsetX = (mouse.x - cx) * 0.08;
       const offsetY = (mouse.y - cy) * 0.08;
 
+      // Dynamic Audio Level Calculation
       if (isSpeaking) {
         audioLevel = 0.45 + Math.sin(Date.now() * 0.02) * 0.35 + Math.sin(Date.now() * 0.04) * 0.15;
       } else if (isListening) {
@@ -273,7 +556,7 @@
         audioLevel = Math.max(0, audioLevel * 0.94);
       }
 
-      // Equalizer bars
+      // Update Equalizer bars
       const eqBars = document.querySelectorAll('#equalizerBars div');
       if (eqBars.length) {
         eqBars.forEach((bar, idx) => {
@@ -289,7 +572,7 @@
       ctx.save();
       ctx.translate(cx + offsetX, cy + offsetY);
 
-      // Outer Halo
+      // 1. Concentric Holographic Outer Aura
       const haloGrad = ctx.createRadialGradient(0, 0, coreRadius * 0.5, 0, 0, pulseRadius * 2.2);
       haloGrad.addColorStop(0, 'rgba(56, 189, 248, 0.02)');
       haloGrad.addColorStop(0.4, isListening ? 'rgba(239, 68, 68, 0.25)' : (isSpeaking ? 'rgba(251, 146, 60, 0.25)' : (isProcessing ? 'rgba(251, 191, 36, 0.22)' : 'rgba(56, 189, 248, 0.1)')));
@@ -299,7 +582,7 @@
       ctx.arc(0, 0, pulseRadius * 2.2, 0, Math.PI * 2);
       ctx.fill();
 
-      // 10 Coils
+      // 2. Iron Man 10 Radial Magnetic Containment Coils
       ctx.save();
       const numCoils = 10;
       for (let i = 0; i < numCoils; i++) {
@@ -324,11 +607,12 @@
       }
       ctx.restore();
 
+      // 3. High Precision Rotating HUD Measurement Rings
       ringAngle1 += (0.006 + audioLevel * 0.02) * (isProcessing ? 2.5 : 1);
       ringAngle2 -= (0.009 + audioLevel * 0.02) * (isProcessing ? 2.5 : 1);
       ringAngle3 += 0.003;
 
-      // Ring 1
+      // Ring 1: Primary Segmented Arc
       ctx.save();
       ctx.rotate(ringAngle1);
       ctx.strokeStyle = isListening ? '#f87171' : (isSpeaking ? '#fb923c' : (isProcessing ? '#fbbf24' : '#38bdf8'));
@@ -339,7 +623,7 @@
       ctx.stroke();
       ctx.restore();
 
-      // Ring 2
+      // Ring 2: Counter-Rotating Secondary Technical Ring
       ctx.save();
       ctx.rotate(ringAngle2);
       ctx.strokeStyle = isListening ? '#ef4444' : (isSpeaking ? '#fdba74' : (isProcessing ? '#fde047' : '#0ea5e9'));
@@ -350,7 +634,7 @@
       ctx.stroke();
       ctx.restore();
 
-      // Ring 3
+      // Ring 3: 360-Degree Azimuth Calibration Ticks
       ctx.save();
       ctx.rotate(ringAngle3);
       const totalTicks = 60;
@@ -361,6 +645,7 @@
         const tickLength = isMajor ? 12 + (audioLevel * 16) : 4;
         const r1 = pulseRadius * 1.38;
         const r2 = r1 + tickLength;
+        
         ctx.strokeStyle = isMajor ? 'rgba(56, 189, 248, 0.65)' : 'rgba(56, 189, 248, 0.25)';
         ctx.beginPath();
         ctx.moveTo(Math.cos(rad) * r1, Math.sin(rad) * r1);
@@ -369,22 +654,29 @@
       }
       ctx.restore();
 
-      // Particles
+      // 4. Dynamic Particle Swarm Constellation
       ctx.globalCompositeOperation = 'lighter';
+
+      // Update and draw particles
       const activeCoords = [];
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
+
+        // Particle speed accelerates on voice / processing
         const currentSpeed = isProcessing ? p.speed * 3.5 : (p.speed * (1 + audioLevel * 2));
         p.angle += currentSpeed;
 
+        // Radial breathing
         const radialPulse = Math.sin(Date.now() * p.radialSpeed + p.radialOffset) * 20 * (1 + audioLevel);
         const currentR = Math.max(coreRadius * 0.9, p.baseRadius + radialPulse + (audioLevel * 50));
 
+        // 3D Orbit projection
         const px = Math.cos(p.angle) * currentR;
         const py = Math.sin(p.angle) * (currentR * (0.8 + p.z * 0.2));
 
         activeCoords.push({ x: px, y: py, color: p.color, size: p.size });
 
+        // Draw particle node
         ctx.beginPath();
         ctx.arc(px, py, p.size * (1 + (audioLevel * 0.5)), 0, Math.PI * 2);
         ctx.fillStyle = isListening ? '#f87171' : (isProcessing ? '#fbbf24' : p.color);
@@ -393,7 +685,7 @@
         ctx.fill();
       }
 
-      // Constellation Filaments
+      // 5. Constellation Filaments between Nearby Particles
       ctx.lineWidth = 0.6;
       const maxDistance = 45 + (audioLevel * 30);
       for (let i = 0; i < activeCoords.length; i++) {
@@ -419,7 +711,7 @@
     requestAnimationFrame(drawArcReactorParticles);
 
     // ============================================================
-    // Speech Recognition
+    // Speech Recognition (Web Speech API)
     // ============================================================
     let recognition = null;
     let currentSpeechText = "";
@@ -427,6 +719,7 @@
     function setupSpeechRecognition() {
       const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRec) {
+        console.warn("Reconnaissance vocale non disponible.");
         return null;
       }
       const rec = new SpeechRec();
@@ -437,6 +730,7 @@
       rec.onstart = () => {
         isListening = true;
         currentSpeechText = "";
+        playSciFiChime('activate');
         updateReactorState("listening");
       };
 
@@ -452,6 +746,7 @@
       };
 
       rec.onerror = (e) => {
+        console.error("Erreur micro :", e.error);
         isListening = false;
         updateReactorState("idle");
       };
@@ -474,7 +769,7 @@
       if (!recognition) recognition = setupSpeechRecognition();
 
       if (!recognition) {
-        alert("Microphone non disponible dans ce navigateur. Utilisez la zone de texte en bas.");
+        alert("La reconnaissance vocale nécessite un navigateur compatible (Chrome, Safari, Edge). Vous pouvez taper votre texte ci-dessous.");
         return;
       }
 
@@ -504,24 +799,198 @@
       } else if (state === "processing") {
         core.className = "relative z-20 w-32 h-32 md:w-40 md:h-40 rounded-full holo-card flex flex-col items-center justify-center border-2 border-amber-400 scale-105 shadow-[0_0_70px_rgba(251,191,36,0.85)]";
         icon.textContent = "⚡";
-        label.textContent = "TRAITEMENT OLLAMA...";
-        statusPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-spin"></span> ANALYSE HERMES EN COURS...`;
+        label.textContent = "TRAITEMENT Z.AI...";
+        statusPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-spin"></span> MATRICE EN CALCUL...`;
         statusPill.className = "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-amber-500/20 text-amber-300 border border-amber-500/40 mb-3 shadow-lg shadow-amber-500/20";
       } else {
         core.className = "relative z-20 w-32 h-32 md:w-40 md:h-40 rounded-full holo-card flex flex-col items-center justify-center border border-cyan-400/80 glow-core shadow-[0_0_60px_rgba(56,189,248,0.45)]";
         icon.textContent = "🎙️";
         label.textContent = "CLIQUEZ POUR PARLER";
-        statusPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> SYSTÈME LOCAL EN LIGNE // PRÊT`;
+        statusPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> SYSTÈME EN LIGNE // PRÊT`;
         statusPill.className = "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 mb-3 shadow-md";
       }
     }
 
     // ============================================================
-    // Local API Chat
+    // Pont Mac Local — Télémétrie, Écran Live & Contrôles Directs
     // ============================================================
+    async function testMacBridgeConnection() {
+      const statusEl = document.getElementById('macTestStatus');
+      const bridgeUrl = (document.getElementById('cfgMacBridgeUrl').value.trim() || 'http://localhost:8888').replace(/\/$/, '');
+      statusEl.textContent = "Test de liaison...";
+      statusEl.className = "text-[10px] text-cyan-400 font-bold animate-pulse";
+
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 3500);
+        const r = await fetch(`${bridgeUrl}/api/telemetry`, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (r.ok) {
+          const data = await r.json();
+          statusEl.textContent = `✅ Connecté : ${data.modele || 'MacBook Pro'}`;
+          statusEl.className = "text-[10px] text-emerald-400 font-bold";
+          setMacLinkStatus(true, data);
+          playSciFiChime('select');
+          return;
+        }
+      } catch (err) {
+        statusEl.textContent = "❌ Échec. Vérifiez python3 server.py ou le tunnel HTTPS.";
+        statusEl.className = "text-[10px] text-rose-400 font-bold";
+        setMacLinkStatus(false);
+      }
+    }
+
+    async function checkMacBridge() {
+      const bridgeUrl = (config.macBridgeUrl || 'http://localhost:8888').replace(/\/$/, '');
+      if (!bridgeUrl) {
+        setMacLinkStatus(false);
+        return null;
+      }
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 2500);
+        const r = await fetch(`${bridgeUrl}/api/telemetry`, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (r.ok) {
+          const data = await r.json();
+          setMacLinkStatus(true, data);
+          return data;
+        }
+      } catch (err) {}
+      setMacLinkStatus(false);
+      return null;
+    }
+
+    function setMacLinkStatus(connected, data = null) {
+      isMacConnected = connected;
+      macTelemetryData = data;
+      const led = document.getElementById('macLed');
+      const label = document.getElementById('macLabel');
+      const badge = document.getElementById('badgeMacLink');
+      
+      if (connected && data) {
+        led.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]";
+        label.className = "text-emerald-300 tracking-wide text-[10px]";
+        label.textContent = "MAC CONNECTÉ";
+        badge.title = `Mac en ligne : ${data.modele || ''}\nCPU: ${data.cpu || ''}\nBatterie: ${data.batterie || ''}`;
+
+        // Mise à jour des jauges HUD latérales
+        if (data.batterie) {
+          const bLabel = document.getElementById('panelBatteryLabel');
+          const bSub = document.getElementById('panelBatterySub');
+          if (bLabel) bLabel.textContent = data.batterie.split('(')[0].trim();
+          if (bSub) bSub.textContent = `● ${(data.batterie.split('(')[1] || 'SECTEUR').replace(')', '').toUpperCase()}`;
+        }
+        if (data.cpu) {
+          const cpuLabel = document.getElementById('panelCpuLabel');
+          const cpuSub = document.getElementById('panelCpuSub');
+          if (cpuLabel) cpuLabel.textContent = "INTEL i7";
+          if (cpuSub) cpuSub.textContent = (data.cpu.split('(')[1] || '8 THREADS').replace(')', '');
+        }
+        if (data.gpu) {
+          const gpuLabel = document.getElementById('panelGpuLabel');
+          const gpuSub = document.getElementById('panelGpuSub');
+          if (gpuLabel) gpuLabel.textContent = data.gpu.includes('Radeon') ? 'RADEON PRO' : 'INTEL HD 630';
+          if (gpuSub) gpuSub.textContent = data.gpu.includes('Radeon') ? 'dGPU HAUTE PERFORMANCE' : 'iGPU ÉCONOMIE';
+        }
+        if (data.modele) {
+          document.getElementById('badgeRegion').textContent = "MacBook Pro";
+        }
+      } else {
+        led.className = "w-2 h-2 rounded-full bg-slate-500";
+        label.className = "text-slate-400 tracking-wide text-[10px]";
+        label.textContent = "MAC HORS LIGNE";
+        badge.title = "Liaison Mac inactive. Cliquez pour configurer l'URL ou lancer server.py.";
+      }
+    }
+
+    // Gestion du Moniteur d'Écran en direct
+    function toggleScreenMonitor() {
+      const modal = document.getElementById('screenMonitorModal');
+      const isHidden = modal.classList.toggle('hidden');
+      if (!isHidden) {
+        playSciFiChime('select');
+        refreshScreenCapture();
+      } else {
+        if (screenAutoRefreshTimer) {
+          clearInterval(screenAutoRefreshTimer);
+          screenAutoRefreshTimer = null;
+          const btn = document.getElementById('autoRefreshBtn');
+          if (btn) {
+            btn.textContent = "⏱️ Auto: OFF";
+            btn.className = "px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 font-hud text-xs flex items-center gap-1 transition-all";
+          }
+        }
+      }
+    }
+
+    async function refreshScreenCapture() {
+      const bridgeUrl = (config.macBridgeUrl || 'http://localhost:8888').replace(/\/$/, '');
+      const img = document.getElementById('screenImage');
+      const placeholder = document.getElementById('screenPlaceholder');
+      const timestamp = document.getElementById('screenTimestamp');
+      const statusNote = document.getElementById('screenStatusNote');
+
+      if (statusNote) statusNote.textContent = "SCAN EN COURS...";
+      const testUrl = `${bridgeUrl}/api/screen?t=${Date.now()}`;
+      
+      const tempImg = new Image();
+      tempImg.onload = () => {
+        img.src = testUrl;
+        img.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+        const now = new Date();
+        timestamp.textContent = now.toLocaleTimeString();
+        if (statusNote) statusNote.textContent = `${tempImg.naturalWidth}x${tempImg.naturalHeight}`;
+        if (!isMacConnected) {
+          checkMacBridge();
+        }
+      };
+      tempImg.onerror = () => {
+        placeholder.classList.remove('hidden');
+        img.classList.add('hidden');
+        if (statusNote) statusNote.textContent = "FLUX DÉCONNECTÉ";
+      };
+      tempImg.src = testUrl;
+    }
+
+    function toggleAutoRefreshScreen() {
+      const btn = document.getElementById('autoRefreshBtn');
+      if (screenAutoRefreshTimer) {
+        clearInterval(screenAutoRefreshTimer);
+        screenAutoRefreshTimer = null;
+        btn.textContent = "⏱️ Auto: OFF";
+        btn.className = "px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 font-hud text-xs flex items-center gap-1 transition-all";
+      } else {
+        refreshScreenCapture();
+        screenAutoRefreshTimer = setInterval(refreshScreenCapture, 2500);
+        btn.textContent = "⏱️ Auto: ON (2.5s)";
+        btn.className = "px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400 font-hud text-xs flex items-center gap-1 font-bold animate-pulse";
+      }
+    }
+
+    async function executeQuickMacAction(command) {
+      playSciFiChime('select');
+      const speechEl = document.getElementById('jarvisSpeech');
+      speechEl.textContent = `Transmission de l'action système : « ${command} »...`;
+      
+      await sendCommand(command);
+      
+      const modal = document.getElementById('screenMonitorModal');
+      if (!modal.classList.contains('hidden')) {
+        setTimeout(refreshScreenCapture, 800);
+      }
+    }
+
+    // ============================================================
+    // Communication & Routage Hybride (Mac Direct + Z.ai Cloud)
+    // ============================================================
+    let chatHistory = [];
+
     async function sendCommand(text) {
       if (!text || isProcessing) return;
       isProcessing = true;
+      playSciFiChime('process');
 
       const speechEl = document.getElementById('jarvisSpeech');
       const promptEl = document.getElementById('transcriptPrompt');
@@ -530,30 +999,96 @@
       promptEl.textContent = `« ${text} »`;
       updateReactorState("processing");
 
-      try {
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: text })
-        });
+      let reply = "";
+      let handledByMac = false;
 
-        const data = await res.json();
-        const reply = data.reply || "À vos ordres, monsieur.";
-
-        speechEl.textContent = `« ${reply} »`;
-
-        isSpeaking = true;
-        const estDurationMs = Math.max(2000, reply.length * 65);
-        setTimeout(() => { isSpeaking = false; }, estDurationMs);
-
-        updateReactorState("idle");
-
-      } catch (err) {
-        speechEl.textContent = "Erreur de transmission avec le serveur local Jarvis.";
-        updateReactorState("idle");
-      } finally {
-        setTimeout(() => { isProcessing = false; }, 400);
+      // 1. Tenter l'exécution locale sur le Mac si le pont est actif et le routage activé
+      if (config.routeToMac && isMacConnected) {
+        const bridgeUrl = (config.macBridgeUrl || 'http://localhost:8888').replace(/\/$/, '');
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 8000);
+          const localRes = await fetch(`${bridgeUrl}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: text }),
+            signal: controller.signal
+          });
+          clearTimeout(timeout);
+          if (localRes.ok) {
+            const data = await localRes.json();
+            reply = data.reply || "Action exécutée sur votre Mac, monsieur.";
+            handledByMac = true;
+          }
+        } catch (e) {
+          console.warn("Liaison Mac injoignable, bascule vers le Cloud Z.ai :", e);
+        }
       }
+
+      // 2. Si non traité par le Mac, passage par le Cloud Vercel Z.ai (GLM)
+      if (!handledByMac) {
+        try {
+          const headers = { 'Content-Type': 'application/json' };
+          if (config.apiKey) {
+            headers['X-ZAI-Key'] = config.apiKey;
+          }
+
+          const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+              query: text,
+              history: chatHistory,
+              model: config.model
+            })
+          });
+
+          const data = await res.json();
+          reply = data.reply || "À vos ordres, monsieur.";
+        } catch (err) {
+          reply = "Erreur de transmission avec le service JARVIS. Vérifiez votre connectivité réseau.";
+        }
+      }
+
+      chatHistory.push({ role: 'user', content: text });
+      chatHistory.push({ role: 'assistant', content: reply });
+      if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+
+      speechEl.textContent = `« ${reply} »`;
+      playSciFiChime('done');
+
+      // Synthèse vocale si activée
+      if (config.voiceEnabled) {
+        speakBrowser(reply);
+      }
+
+      updateReactorState("idle");
+      setTimeout(() => { isProcessing = false; }, 300);
+
+      // Si le moniteur d'écran est ouvert, rafraîchir l'écran pour constater le changement
+      const screenModal = document.getElementById('screenMonitorModal');
+      if (screenModal && !screenModal.classList.contains('hidden') && isMacConnected) {
+        setTimeout(refreshScreenCapture, 700);
+      }
+    }
+
+    function speakBrowser(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'fr-FR';
+      utter.rate = 1.05;
+
+      const voices = window.speechSynthesis.getVoices();
+      const frenchVoice = voices.find(v => v.lang.startsWith('fr') && (v.name.includes('Thomas') || v.name.includes('Google') || v.name.includes('Siri') || v.name.includes('Audrey'))) || voices.find(v => v.lang.startsWith('fr'));
+      if (frenchVoice) utter.voice = frenchVoice;
+
+      isSpeaking = true;
+      utter.onend = () => { isSpeaking = false; };
+      utter.onerror = () => { isSpeaking = false; };
+
+      window.speechSynthesis.speak(utter);
     }
 
     function handleManualInput(e) {
@@ -571,38 +1106,19 @@
       sendCommand(promptText);
     }
 
+    // Spacebar shortcut
     window.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT') {
+      if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
         e.preventDefault();
         toggleMicrophone();
       }
     });
 
-    let activeModelName = "Hermes 3";
-    function toggleActiveModel() {
-      if (activeModelName === "Hermes 3") {
-        activeModelName = "Llama 3.2";
-        document.getElementById('badgeModel').textContent = "Llama 3.2";
-        document.getElementById('badgeModel').className = "text-emerald-400";
-        sendCommand("active le mode llama");
-      } else {
-        activeModelName = "Hermes 3";
-        document.getElementById('badgeModel').textContent = "Hermes 3";
-        document.getElementById('badgeModel').className = "text-amber-400";
-        sendCommand("active le mode hermes");
-      }
-    }
-
-    async function updateTelemetry() {
-      try {
-        const r = await fetch('/api/telemetry');
-        const data = await r.json();
-        if (data.batterie) document.getElementById('badgeBattery').textContent = data.batterie.split(' ')[0];
-        if (data.gpu) document.getElementById('badgeGpu').textContent = data.gpu.includes('Radeon') ? 'Radeon 560' : 'Intel HD 630';
-      } catch (e) {}
-    }
-    setInterval(updateTelemetry, 15000);
-    updateTelemetry();
+    // Initialisation
+    loadConfig();
+    updateCloudTelemetry();
+    checkMacBridge();
+    setInterval(checkMacBridge, 10000);
   </script>
 </body>
 </html>
