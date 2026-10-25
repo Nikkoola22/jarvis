@@ -279,6 +279,17 @@ def ask(query: str, history: list = None) -> tuple[str, str | None]:
             return connectors.compose_outlook_email(to=to_addr, subject=sub, body=msg_body), "outlook_compose"
         return tools.open_app("Microsoft Outlook"), "open_outlook"
 
+    # iTerm2 & Terminal
+    if "iterm" in q_low or "iterm2" in q_low:
+        cmd = ""
+        for sep in ["lance ", "exécute ", "exec ", "run ", "avec "]:
+            if sep in q_low:
+                cmd = query.split(sep, 1)[1].strip()
+                break
+        if "agy" in q_low and not cmd:
+            cmd = "agy"
+        return connectors.open_in_iterm(cmd), "iterm_open"
+
     # IINA & VLC
     if "iina" in q_low:
         return connectors.open_in_iina("~/Downloads"), "iina_open"

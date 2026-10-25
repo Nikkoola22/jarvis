@@ -91,7 +91,7 @@ class JarvisHandler(http.server.BaseHTTPRequestHandler):
 
     def do_HEAD(self):
         parsed = urlparse(self.path)
-        if parsed.path in ["/", "/index.html", "/api/telemetry", "/api/screen", "/api/outlook"]:
+        if parsed.path in ["/", "/index.html", "/api/telemetry", "/api/screen", "/api/outlook", "/api/iterm"]:
             self.send_response(200)
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
@@ -295,6 +295,25 @@ class JarvisHandler(http.server.BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode("utf-8"))
                 return
+
+        if parsed.path == "/api/iterm":
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
+            from core import connectors
+            try:
+                payload = json.loads(body) if body else {}
+                cmd = payload.get("command", "")
+                res = connectors.open_in_iterm(cmd)
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(json.dumps({"reply": res, "status": "ok"}).encode("utf-8"))
+            except Exception as e:
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode("utf-8"))
+            return
 
         self.send_response(404)
         self.end_headers()

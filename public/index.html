@@ -415,6 +415,9 @@
           <span id="terminalCwdBadge" class="text-[10px] font-mono text-emerald-400/90 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/50 truncate max-w-[120px] sm:max-w-[320px]">~</span>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
+          <button type="button" onclick="openCurrentInIterm()" class="px-2 sm:px-2.5 py-1 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-400 font-hud text-[11px] sm:text-xs flex items-center gap-1 transition-all active:scale-95 cursor-pointer" title="Ouvrir la session dans l'application iTerm2 sur votre Mac">
+            💻 <span class="hidden sm:inline">Ouvrir iTerm2</span>
+          </button>
           <button onclick="clearTerminalOutput()" class="px-2 sm:px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 font-hud text-[11px] sm:text-xs transition-all active:scale-95">
             🧹 <span class="hidden sm:inline">Effacer</span>
           </button>
@@ -1521,6 +1524,21 @@ void main(){
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
+    }
+
+    async function openCurrentInIterm(cmd = '') {
+      playSciFiChime('select');
+      const inputCmd = cmd || document.getElementById('terminalCmdInput')?.value || '';
+      const bridgeUrl = (cleanBridgeUrl(config.macBridgeUrl) || 'http://localhost:8888').replace(/\/$/, '');
+      try {
+        await fetch(`${bridgeUrl}/api/iterm`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: inputCmd })
+        });
+      } catch (e) {
+        sendCommand(inputCmd ? `lance ${inputCmd} dans iterm` : 'ouvre iterm');
+      }
     }
 
     // ============================================================

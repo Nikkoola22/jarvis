@@ -447,3 +447,38 @@ def open_folder(folder_name: str) -> str:
     path = os.path.expanduser(target_map.get(folder_name.lower(), "~/Downloads"))
     subprocess.run(["open", path])
     return f"Dossier {folder_name.capitalize()} ouvert dans le Finder."
+
+# ============================================================
+# 11. TERMINAL & OUTILS (iTerm2 & Plugin Navigateur)
+# ============================================================
+def open_in_iterm(command: str = "") -> str:
+    """Ouvre iTerm2 et exécute optionnellement une commande dans une nouvelle session ou onglet."""
+    iterm_path = "/Users/nikkoola/Applications/iTerm.app"
+    if not os.path.exists(iterm_path):
+        iterm_path = "iTerm"
+
+    cmd_clean = command.replace('"', '\\"').replace("'", "\\'") if command else ""
+    script = f'''
+    tell application "{iterm_path}"
+        activate
+        if (count of windows) is 0 then
+            set newWin to (create window with default profile)
+            tell current session of newWin
+                if "{cmd_clean}" is not "" then write text "{cmd_clean}"
+            end tell
+        else
+            tell current window
+                create tab with default profile
+                tell current session
+                    if "{cmd_clean}" is not "" then write text "{cmd_clean}"
+                end tell
+            end tell
+        end if
+        return "Session iTerm2 ouverte avec succès."
+    end tell
+    '''
+    res = _run_osa(script, timeout=6)
+    if "Erreur" in res:
+        subprocess.run(["open", "-a", iterm_path])
+        return "iTerm2 a été ouvert à l'écran, monsieur."
+    return f"iTerm2 activé avec la commande « {command} »." if command else "iTerm2 ouvert à l'écran, monsieur."
