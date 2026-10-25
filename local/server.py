@@ -11,6 +11,7 @@ import socketserver
 import sys
 import threading
 import subprocess
+import re
 from urllib.parse import urlparse
 
 # Assurer le chargement des modules du dossier jarvis
@@ -119,17 +120,28 @@ class JarvisHandler(http.server.BaseHTTPRequestHandler):
             cwd = os.path.expanduser("~")
             try:
                 payload = json.loads(body)
-                cmd = payload.get("command", "").strip()
+                raw_cmd = payload.get("command", "").strip()
                 req_cwd = payload.get("cwd", "").strip()
                 if req_cwd and os.path.isdir(os.path.expanduser(req_cwd)):
                     cwd = os.path.expanduser(req_cwd)
 
-                if not cmd:
+                if not raw_cmd:
                     self.send_response(400)
                     self.send_header("Content-Type", "application/json")
                     self.end_headers()
                     self.wfile.write(json.dumps({"error": "Commande vide"}).encode("utf-8"))
                     return
+
+                # Normalisation des guillemets iOS / smart quotes
+                cmd = raw_cmd.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
+
+                # Préparation de l'environnement d'exécution avec PATH complet
+                sub_env = os.environ.copy()
+                user_home = os.path.expanduser("~")
+                local_bin = os.path.join(user_home, ".local", "bin")
+                gemini_bin = os.path.join(user_home, ".gemini", "antigravity-cli", "bin")
+                extra_paths = [local_bin, gemini_bin, "/opt/homebrew/bin", "/usr/local/bin"]
+                sub_env["PATH"] = ":".join(extra_paths) + ":" + sub_env.get("PATH", "/usr/bin:/bin:/usr/sbin:/sbin")
 
                 # Guardrails pour commandes interactives TUI
                 if cmd == "agy":
@@ -153,7 +165,8 @@ class JarvisHandler(http.server.BaseHTTPRequestHandler):
                         capture_output=True,
                         text=True,
                         timeout=15,
-                        cwd=cwd
+                        cwd=cwd,
+                        env=sub_env
                     )
                     out = res.stdout + res.stderr
                     code = res.returncode
@@ -171,14 +184,30 @@ class JarvisHandler(http.server.BaseHTTPRequestHandler):
                         out = f"cd: {target}: Aucun fichier ou dossier de ce nom\n"
                         code = 1
                 else:
+                    # Traitement automatique pour agy -p non quoté
+                    # Si l'utilisateur tape: agy -p quel temps fait-il ?
+                    m = re.match(r"^(agy\s+(?:-p|--print|--prompt))\s+(.+)$", cmd)
+                    if m:
+                        prefix = m.group(1)
+                        prompt_arg = m.group(2).strip()
+                        if not ((prompt_arg.startswith('"') and prompt_arg.endswith('"')) or
+                                (prompt_arg.startswith("'") and prompt_arg.endswith("'"))):
+                            escaped = prompt_arg.replace('"', '\\"')
+                            cmd = f'{prefix} "{escaped}"'
+
+                    # unsetopt nomatch pour empêcher l'erreur zsh sur les caractères de motif glob (?, *)
+                    exec_cmd = f"unsetopt nomatch; {cmd}"
+                    cmd_timeout = 80 if "agy" in cmd else 30
+
                     res = subprocess.run(
-                        cmd,
+                        exec_cmd,
                         shell=True,
                         executable="/bin/zsh",
                         capture_output=True,
                         text=True,
-                        timeout=25,
-                        cwd=cwd
+                        timeout=cmd_timeout,
+                        cwd=cwd,
+                        env=sub_env
                     )
                     out = res.stdout + res.stderr
                     code = res.returncode
@@ -193,10 +222,10 @@ class JarvisHandler(http.server.BaseHTTPRequestHandler):
                 }).encode("utf-8"))
             except subprocess.TimeoutExpired:
                 self.send_response(200)
-                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Type", "application/json; charset=utf-8")
                 self.end_headers()
                 self.wfile.write(json.dumps({
-                    "output": "⏱️ Timeout : la commande a dépassé le délai de 25s.\n",
+                    "output": "⏱️ Timeout : la commande a dépassé le délai imparti.\n",
                     "returncode": 124,
                     "cwd": cwd
                 }).encode("utf-8"))
