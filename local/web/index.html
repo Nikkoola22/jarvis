@@ -2,176 +2,607 @@
 <html lang="fr" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JARVIS HUD — Assistant Personnel macOS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>JARVIS Local — Mark VII Arc Reactor (Hermes 3)</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono:wght@400;600;700;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
   <style>
+    * { box-sizing: border-box; }
     body {
-      background: radial-gradient(circle at 50% 30%, #030712 0%, #020617 100%);
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #01040a;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      overflow-x: hidden;
+      user-select: none;
+      color: #e2e8f0;
     }
-    .hud-glass {
-      background: rgba(15, 23, 42, 0.65);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(56, 189, 248, 0.2);
-      box-shadow: 0 0 35px rgba(56, 189, 248, 0.08);
+    .font-hud { font-family: 'JetBrains Mono', monospace; }
+    .font-sci { font-family: 'Orbitron', monospace; }
+
+    /* Scanlines effect */
+    .scanlines {
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), linear-gradient(90deg, rgba(56, 189, 248, 0.02), rgba(0, 255, 128, 0.01), rgba(56, 189, 248, 0.02));
+      background-size: 100% 3px, 6px 100%;
+      pointer-events: none;
     }
-    .glow-cyan {
-      box-shadow: 0 0 25px rgba(56, 189, 248, 0.35);
+
+    /* Holographic card */
+    .holo-card {
+      background: rgba(3, 16, 34, 0.65);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      box-shadow: 0 0 35px rgba(56, 189, 248, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.15);
     }
-    .arc-glow {
-      filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.6));
+    .holo-card:hover {
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 45px rgba(56, 189, 248, 0.22), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Deep Cyber Vignette */
+    .vignette {
+      background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.85) 100%);
+      pointer-events: none;
+    }
+
+    /* Perspective Grid */
+    .cyber-grid {
+      background-image: 
+        linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(ellipse at 50% 50%, black 20%, transparent 75%);
+      -webkit-mask-image: radial-gradient(ellipse at 50% 50%, black 20%, transparent 75%);
+      pointer-events: none;
+    }
+
+    @keyframes reactor-pulse {
+      0% { filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.5)) drop-shadow(0 0 40px rgba(14, 165, 233, 0.3)); }
+      50% { filter: drop-shadow(0 0 35px rgba(56, 189, 248, 0.85)) drop-shadow(0 0 70px rgba(14, 165, 233, 0.5)); }
+      100% { filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.5)) drop-shadow(0 0 40px rgba(14, 165, 233, 0.3)); }
+    }
+    .glow-core {
+      animation: reactor-pulse 3s infinite ease-in-out;
     }
   </style>
 </head>
-<body class="text-slate-100 min-h-screen flex flex-col justify-between p-6">
+<body class="min-h-screen relative flex flex-col justify-between p-4 md:p-6 overflow-hidden">
 
-  <!-- HUD Top Bar -->
-  <header class="max-w-4xl w-full mx-auto flex items-center justify-between border-b border-cyan-500/20 pb-4">
+  <!-- Background Ambience -->
+  <div class="fixed inset-0 cyber-grid z-0"></div>
+  <div class="fixed inset-0 vignette z-10"></div>
+  <div class="fixed inset-0 scanlines z-40"></div>
+
+  <!-- Top Navigation & Telemetry HUD -->
+  <header class="relative z-30 max-w-6xl w-full mx-auto flex flex-wrap items-center justify-between gap-4 border-b border-cyan-500/20 pb-4">
     <div class="flex items-center gap-3">
-      <div class="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></div>
-      <h1 class="font-extrabold tracking-widest text-lg text-cyan-400 uppercase font-mono">JARVIS // LOCAL OS</h1>
-    </div>
-    <div class="flex items-center gap-4 text-xs font-mono text-slate-400">
-      <span>CPU : <strong class="text-cyan-300">Intel i7</strong></span>
-      <span>GPU : <strong class="text-indigo-300">Radeon Pro 560</strong></span>
-      <span>LLM : <strong class="text-emerald-400">Llama 3.2 (3B)</strong></span>
-    </div>
-  </header>
-
-  <!-- Central Arc Reactor / Waveform -->
-  <main class="max-w-3xl w-full mx-auto my-auto flex flex-col items-center justify-center text-center">
-    
-    <!-- Arc Reactor Visual -->
-    <div class="relative w-48 h-48 flex items-center justify-center mb-6">
-      <div class="absolute inset-0 rounded-full border border-cyan-500/20 animate-spin" style="animation-duration: 20s;"></div>
-      <div class="absolute inset-2 rounded-full border-2 border-dashed border-cyan-400/40 animate-spin" style="animation-duration: 12s; animation-direction: reverse;"></div>
-      <div class="w-28 h-28 rounded-full bg-cyan-950/40 hud-glass flex items-center justify-center border border-cyan-400/50 glow-cyan cursor-pointer" onclick="activateListening()">
-        <span class="text-3xl arc-glow">💠</span>
+      <div class="relative flex items-center justify-center">
+        <div class="w-3.5 h-3.5 rounded-full bg-cyan-400 animate-ping absolute"></div>
+        <div class="w-3.5 h-3.5 rounded-full bg-cyan-400 shadow-[0_0_12px_#38bdf8]"></div>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-sci font-black tracking-widest text-base text-cyan-400 uppercase">J.A.R.V.I.S.</span>
+          <span class="text-[10px] px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-hud tracking-wider">LOCAL MAC // MARK 14,3</span>
+        </div>
+        <div class="text-[10px] font-hud text-slate-400 tracking-wider">HERMES 3 CORE • HARDWARE INTEGRATED</div>
       </div>
     </div>
 
-    <!-- Live Status / Response -->
-    <div id="statusBadge" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 mb-3">
-      ● SYSTÈME ACTIF ET EN ATTENTE
+    <!-- Live Hardware Telemetry Badges -->
+    <div class="flex items-center gap-2.5 text-xs font-hud">
+      <div class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-2">
+        <span class="text-slate-400">BATTERIE</span>
+        <strong id="badgeBattery" class="text-cyan-300 tracking-wide">--%</strong>
+      </div>
+      <div class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-2">
+        <span class="text-slate-400">GPU</span>
+        <strong id="badgeGpu" class="text-indigo-300 tracking-wide">Radeon 560</strong>
+      </div>
+      <div onclick="toggleActiveModel()" class="holo-card px-3 py-1.5 rounded-xl flex items-center gap-2 cursor-pointer hover:border-cyan-400 transition-colors" title="Cliquer pour basculer de modèle (Hermes ⇄ Llama)">
+        <span class="text-slate-400">CERVEAU</span>
+        <strong id="badgeModel" class="text-amber-400 tracking-wide">Hermes 3</strong>
+        <span class="text-[10px] text-cyan-400">⇄</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Central Arc Reactor Core & Particles Display -->
+  <main class="relative z-30 flex-1 flex flex-col items-center justify-center text-center my-auto py-4">
+
+    <!-- HUD Lateral Telemetry Panels (Desktop) -->
+    <div class="absolute left-6 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-4 text-left font-hud text-[11px] text-cyan-400/80 pointer-events-none">
+      <div class="holo-card p-3 rounded-xl border border-cyan-500/20 w-44">
+        <div class="text-slate-400 text-[10px] uppercase mb-1">Spectre Audio</div>
+        <div class="flex items-end gap-1 h-8" id="equalizerBars">
+          <div class="w-1.5 bg-cyan-400/80 rounded-t h-2 transition-all duration-75"></div>
+          <div class="w-1.5 bg-cyan-400/80 rounded-t h-4 transition-all duration-75"></div>
+          <div class="w-1.5 bg-cyan-400/80 rounded-t h-6 transition-all duration-75"></div>
+          <div class="w-1.5 bg-cyan-400/80 rounded-t h-3 transition-all duration-75"></div>
+          <div class="w-1.5 bg-cyan-400/80 rounded-t h-7 transition-all duration-75"></div>
+          <div class="w-1.5 bg-cyan-400/80 rounded-t h-5 transition-all duration-75"></div>
+          <div class="w-1.5 bg-cyan-400/80 rounded-t h-2 transition-all duration-75"></div>
+          <div class="w-1.5 bg-cyan-400/80 rounded-t h-4 transition-all duration-75"></div>
+        </div>
+      </div>
+      <div class="holo-card p-3 rounded-xl border border-cyan-500/20 w-44">
+        <div class="text-slate-400 text-[10px] uppercase mb-0.5">Fusion Core Output</div>
+        <div class="text-cyan-300 font-bold text-sm font-sci">3.14 GJ/s</div>
+        <div class="text-[9px] text-emerald-400 mt-1">● CONFINEMENT STABLE</div>
+      </div>
     </div>
 
-    <div id="speechBox" class="hud-glass rounded-2xl p-6 w-full max-w-2xl text-left border border-cyan-500/30 min-h-[110px] flex items-center">
-      <p id="jarvisText" class="text-slate-200 text-sm md:text-base leading-relaxed">
-        « Bonjour monsieur Nikkoola. Tous les systèmes du MacBook Pro sont opérationnels. Quel est votre ordre ? »
+    <div class="absolute right-6 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-4 text-right font-hud text-[11px] text-cyan-400/80 pointer-events-none">
+      <div class="holo-card p-3 rounded-xl border border-cyan-500/20 w-44">
+        <div class="text-slate-400 text-[10px] uppercase mb-0.5">Moteur Local</div>
+        <div class="text-amber-400 font-bold text-sm font-sci">HERMES 3 8B</div>
+        <div class="text-[9px] text-cyan-300 mt-1">OLLAMA ENGINE : 0ms NET</div>
+      </div>
+      <div class="holo-card p-3 rounded-xl border border-cyan-500/20 w-44">
+        <div class="text-slate-400 text-[10px] uppercase mb-0.5">Champ Électromagnétique</div>
+        <div class="text-cyan-300 font-bold text-sm font-sci">140 PARTILCES</div>
+        <div class="text-[9px] text-cyan-400/70 mt-1">CONSTELLATION HARMONIQUE</div>
+      </div>
+    </div>
+
+    <!-- Holographic Particle Aura & Arc Reactor Interactive Container -->
+    <div class="relative w-[340px] h-[340px] sm:w-[420px] sm:h-[420px] md:w-[480px] md:h-[480px] flex items-center justify-center cursor-pointer group" onclick="toggleMicrophone()">
+      <!-- Background Dynamic 2D Canvas with Particle Constellation & Hologram Aura -->
+      <canvas id="auraCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-10"></canvas>
+
+      <!-- Central Arc Reactor Core Button (True Iron Man Architecture) -->
+      <div id="coreReactor" class="relative z-20 w-32 h-32 md:w-40 md:h-40 rounded-full holo-card flex flex-col items-center justify-center border border-cyan-400/80 transition-all duration-500 group-hover:scale-105 glow-core shadow-[0_0_60px_rgba(56,189,248,0.45)]">
+        
+        <div class="absolute inset-2 rounded-full border border-dashed border-cyan-400/40 animate-[spin_20s_linear_infinite] pointer-events-none"></div>
+        <div class="absolute inset-4 rounded-full border border-cyan-300/30 animate-[spin_12s_linear_infinite_reverse] pointer-events-none"></div>
+
+        <div class="relative flex flex-col items-center justify-center z-30">
+          <span id="coreIcon" class="text-3xl md:text-4xl filter drop-shadow-[0_0_20px_rgba(56,189,248,0.9)] transition-transform duration-300 group-hover:scale-110">🎙️</span>
+          <span id="coreLabel" class="text-[9px] md:text-[10px] font-hud font-bold tracking-widest text-cyan-300 uppercase mt-2">CLIQUEZ POUR PARLER</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Status Pill -->
+    <div id="statusPill" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 mb-3 transition-all duration-300 shadow-md">
+      <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> SYSTÈME LOCAL EN LIGNE // PRÊT
+    </div>
+
+    <!-- Speech Holographic Dialogue Box -->
+    <div class="holo-card rounded-2xl p-5 md:p-6 w-full max-w-2xl text-left border border-cyan-500/30 min-h-[90px] flex flex-col justify-center transition-all duration-300 shadow-2xl relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-16 h-[2px] bg-cyan-400"></div>
+      <div id="transcriptPrompt" class="text-xs font-hud text-cyan-400/90 mb-1 hidden"></div>
+      <p id="jarvisSpeech" class="text-slate-100 text-sm md:text-base leading-relaxed tracking-wide font-normal">
+        « Bonjour monsieur Nikkoola. L'interface holographique Mark VII est active. Cliquez sur le réacteur ou appuyez sur Espace pour me parler. »
       </p>
     </div>
 
-    <!-- Quick Commands -->
-    <div class="flex flex-wrap items-center justify-center gap-2 mt-4 text-xs font-mono">
-      <button onclick="sendQuick('Rapport télémétrie complet')" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-400/40 transition-colors">
-        📊 Télémétrie
-      </button>
-      <button onclick="sendQuick('Quel temps fait-il à Paris ?')" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-400/40 transition-colors">
-        🌧️ Météo
-      </button>
-      <button onclick="sendQuick('État de la batterie')" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-400/40 transition-colors">
-        🔋 Batterie
-      </button>
-      <button onclick="sendQuick('Bascule le mode sombre')" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-400/40 transition-colors">
-        🌓 Dark Mode
-      </button>
+    <!-- Quick Action Chips -->
+    <div class="flex flex-wrap items-center justify-center gap-2 mt-4 max-w-2xl">
+      <button onclick="quickAction('Fais un rapport de diagnostic complet du système.')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-cyan-300/80 hover:text-cyan-100 hover:border-cyan-400 transition-all">📊 Diagnostic</button>
+      <button onclick="quickAction('Quel morceau joue actuellement sur Spotify ?')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-cyan-300/80 hover:text-cyan-100 hover:border-cyan-400 transition-all">🎵 Spotify</button>
+      <button onclick="quickAction('Vérifie si j\'ai de nouveaux emails reçus.')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-cyan-300/80 hover:text-cyan-100 hover:border-cyan-400 transition-all">✉️ Emails</button>
+      <button onclick="quickAction('Bascule le système en mode sombre.')" class="holo-card px-3 py-1 rounded-full text-xs font-hud text-cyan-300/80 hover:text-cyan-100 hover:border-cyan-400 transition-all">🌙 Dark Mode</button>
     </div>
+
   </main>
 
-  <!-- Input Bar -->
-  <footer class="max-w-3xl w-full mx-auto">
-    <form onsubmit="handleQuery(event)" class="relative flex items-center">
-      <input 
-        id="userInput" 
-        type="text" 
-        placeholder="Donner un ordre à JARVIS ou poser une question..."
-        class="w-full bg-slate-900/80 border border-cyan-500/30 rounded-2xl px-5 py-3.5 pr-28 text-sm focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-white placeholder-slate-500 font-sans shadow-lg"
+  <!-- Bottom Command Input Dock -->
+  <footer class="relative z-30 max-w-3xl w-full mx-auto">
+    <form onsubmit="handleManualInput(event)" class="holo-card rounded-2xl p-2 flex items-center gap-2 border border-cyan-500/30 focus-within:border-cyan-400 transition-all">
+      <input
+        type="text"
+        id="textInput"
+        placeholder="Donnez un ordre à Jarvis ou appuyez sur Espace pour parler..."
+        class="flex-1 bg-transparent px-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none font-hud"
+        autocomplete="off"
       />
-      <button 
-        type="submit" 
-        class="absolute right-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center gap-1.5 font-mono"
+      <button
+        type="submit"
+        class="bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/40 hover:border-cyan-300 px-5 py-2 rounded-xl text-xs font-hud font-bold uppercase tracking-wider transition-all duration-200"
       >
-        EXÉCUTER ↵
+        Transmettre
       </button>
     </form>
   </footer>
 
   <script>
-    function speakText(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(text);
-        utter.lang = 'fr-FR';
-        utter.rate = 1.05;
-        window.speechSynthesis.speak(utter);
+    // Audio Visualizer Canvas
+    const canvas = document.getElementById('auraCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function resize() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      width = canvas.width = rect.width;
+      height = canvas.height = rect.height;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    let mouse = { x: width / 2, y: height / 2, targetX: width / 2, targetY: height / 2 };
+    window.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.targetX = e.clientX - rect.left;
+      mouse.targetY = e.clientY - rect.top;
+    });
+
+    let isListening = false;
+    let isSpeaking = false;
+    let isProcessing = false;
+    let audioLevel = 0;
+
+    // 140 Particles
+    const PARTICLE_COUNT = 140;
+    const particles = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        angle: Math.random() * Math.PI * 2,
+        radius: 80 + Math.random() * 150,
+        baseRadius: 80 + Math.random() * 150,
+        speed: (0.004 + Math.random() * 0.012) * (Math.random() > 0.5 ? 1 : -1),
+        radialSpeed: 0.02 + Math.random() * 0.03,
+        radialOffset: Math.random() * Math.PI * 2,
+        size: 1.2 + Math.random() * 2.8,
+        color: Math.random() > 0.15 ? '#38bdf8' : (Math.random() > 0.5 ? '#67e8f9' : '#fbbf24'),
+        alpha: 0.3 + Math.random() * 0.7,
+        z: Math.random() * 2 - 1
+      });
+    }
+
+    let ringAngle1 = 0;
+    let ringAngle2 = 0;
+    let ringAngle3 = 0;
+
+    function drawArcReactorParticles() {
+      ctx.clearRect(0, 0, width, height);
+      const cx = width / 2;
+      const cy = height / 2;
+
+      mouse.x += (mouse.targetX - mouse.x) * 0.05;
+      mouse.y += (mouse.targetY - mouse.y) * 0.05;
+      const offsetX = (mouse.x - cx) * 0.08;
+      const offsetY = (mouse.y - cy) * 0.08;
+
+      if (isSpeaking) {
+        audioLevel = 0.45 + Math.sin(Date.now() * 0.02) * 0.35 + Math.sin(Date.now() * 0.04) * 0.15;
+      } else if (isListening) {
+        audioLevel = 0.35 + Math.sin(Date.now() * 0.012) * 0.25;
+      } else if (isProcessing) {
+        audioLevel = 0.28 + Math.sin(Date.now() * 0.025) * 0.2;
+      } else {
+        audioLevel = Math.max(0, audioLevel * 0.94);
       }
-    }
 
-    function sendQuick(prompt) {
-      document.getElementById('userInput').value = prompt;
-      handleQuery(new Event('submit'));
-    }
-
-    async function handleQuery(e) {
-      if (e) e.preventDefault();
-      const input = document.getElementById('userInput');
-      const val = input.value.trim();
-      if (!val) return;
-
-      const textBox = document.getElementById('jarvisText');
-      const statusBadge = document.getElementById('statusBadge');
-
-      statusBadge.innerHTML = `<span class="animate-spin inline-block">⚙️</span> TRAITEMENT EN COURS...`;
-      statusBadge.className = "inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-amber-500/20 text-amber-300 border border-amber-500/40 mb-3";
-
-      try {
-        const resp = await fetch('http://localhost:11434/api/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'llama3.2:3b',
-            prompt: `Tu es JARVIS, assistant personnel d'élite sur macOS. Réponds en français de façon concise et courtoise à : ${val}`,
-            stream: false
-          })
+      // Equalizer bars
+      const eqBars = document.querySelectorAll('#equalizerBars div');
+      if (eqBars.length) {
+        eqBars.forEach((bar, idx) => {
+          const val = (isListening || isSpeaking) ? Math.min(32, Math.max(4, Math.sin(Date.now() * 0.01 + idx) * 14 + (audioLevel * 24))) : 4;
+          bar.style.height = `${val}px`;
+          bar.style.backgroundColor = isListening ? '#f87171' : (isSpeaking ? '#fb923c' : '#38bdf8');
         });
-
-        const data = await resp.json();
-        const reply = data.response.trim();
-
-        textBox.textContent = reply;
-        speakText(reply);
-
-        statusBadge.innerHTML = `● RÉPONSE GÉNÉRÉE AVEC SUCCÈS`;
-        statusBadge.className = "inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 mb-3";
-      } catch (err) {
-        textBox.textContent = "Erreur de connexion avec le serveur local Ollama (port 11434). Assurez-vous que le service est lancé.";
       }
-      input.value = '';
+
+      const coreRadius = Math.min(width, height) * 0.22;
+      const pulseRadius = coreRadius + (audioLevel * 35);
+
+      ctx.save();
+      ctx.translate(cx + offsetX, cy + offsetY);
+
+      // Outer Halo
+      const haloGrad = ctx.createRadialGradient(0, 0, coreRadius * 0.5, 0, 0, pulseRadius * 2.2);
+      haloGrad.addColorStop(0, 'rgba(56, 189, 248, 0.02)');
+      haloGrad.addColorStop(0.4, isListening ? 'rgba(239, 68, 68, 0.25)' : (isSpeaking ? 'rgba(251, 146, 60, 0.25)' : (isProcessing ? 'rgba(251, 191, 36, 0.22)' : 'rgba(56, 189, 248, 0.1)')));
+      haloGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = haloGrad;
+      ctx.beginPath();
+      ctx.arc(0, 0, pulseRadius * 2.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 10 Coils
+      ctx.save();
+      const numCoils = 10;
+      for (let i = 0; i < numCoils; i++) {
+        const coilAngle = (i / numCoils) * Math.PI * 2 + ringAngle1 * 0.3;
+        const coilR = coreRadius * 0.95;
+        const x = Math.cos(coilAngle) * coilR;
+        const y = Math.sin(coilAngle) * coilR;
+        
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(coilAngle + Math.PI / 2);
+        
+        ctx.fillStyle = isListening ? 'rgba(239, 68, 68, 0.6)' : (isProcessing ? 'rgba(251, 191, 36, 0.6)' : 'rgba(56, 189, 248, 0.5)');
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(-6, -4, 12, 8, 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.restore();
+      }
+      ctx.restore();
+
+      ringAngle1 += (0.006 + audioLevel * 0.02) * (isProcessing ? 2.5 : 1);
+      ringAngle2 -= (0.009 + audioLevel * 0.02) * (isProcessing ? 2.5 : 1);
+      ringAngle3 += 0.003;
+
+      // Ring 1
+      ctx.save();
+      ctx.rotate(ringAngle1);
+      ctx.strokeStyle = isListening ? '#f87171' : (isSpeaking ? '#fb923c' : (isProcessing ? '#fbbf24' : '#38bdf8'));
+      ctx.lineWidth = 2;
+      ctx.setLineDash([24, 16, 48, 20]);
+      ctx.beginPath();
+      ctx.arc(0, 0, pulseRadius * 1.15, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      // Ring 2
+      ctx.save();
+      ctx.rotate(ringAngle2);
+      ctx.strokeStyle = isListening ? '#ef4444' : (isSpeaking ? '#fdba74' : (isProcessing ? '#fde047' : '#0ea5e9'));
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([50, 40, 10, 30, 80, 20]);
+      ctx.beginPath();
+      ctx.arc(0, 0, pulseRadius * 1.28, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      // Ring 3
+      ctx.save();
+      ctx.rotate(ringAngle3);
+      const totalTicks = 60;
+      ctx.lineWidth = 1;
+      for (let i = 0; i < totalTicks; i++) {
+        const rad = (i / totalTicks) * Math.PI * 2;
+        const isMajor = i % 5 === 0;
+        const tickLength = isMajor ? 12 + (audioLevel * 16) : 4;
+        const r1 = pulseRadius * 1.38;
+        const r2 = r1 + tickLength;
+        ctx.strokeStyle = isMajor ? 'rgba(56, 189, 248, 0.65)' : 'rgba(56, 189, 248, 0.25)';
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(rad) * r1, Math.sin(rad) * r1);
+        ctx.lineTo(Math.cos(rad) * r2, Math.sin(rad) * r2);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // Particles
+      ctx.globalCompositeOperation = 'lighter';
+      const activeCoords = [];
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        const currentSpeed = isProcessing ? p.speed * 3.5 : (p.speed * (1 + audioLevel * 2));
+        p.angle += currentSpeed;
+
+        const radialPulse = Math.sin(Date.now() * p.radialSpeed + p.radialOffset) * 20 * (1 + audioLevel);
+        const currentR = Math.max(coreRadius * 0.9, p.baseRadius + radialPulse + (audioLevel * 50));
+
+        const px = Math.cos(p.angle) * currentR;
+        const py = Math.sin(p.angle) * (currentR * (0.8 + p.z * 0.2));
+
+        activeCoords.push({ x: px, y: py, color: p.color, size: p.size });
+
+        ctx.beginPath();
+        ctx.arc(px, py, p.size * (1 + (audioLevel * 0.5)), 0, Math.PI * 2);
+        ctx.fillStyle = isListening ? '#f87171' : (isProcessing ? '#fbbf24' : p.color);
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 10;
+        ctx.fill();
+      }
+
+      // Constellation Filaments
+      ctx.lineWidth = 0.6;
+      const maxDistance = 45 + (audioLevel * 30);
+      for (let i = 0; i < activeCoords.length; i++) {
+        for (let j = i + 1; j < activeCoords.length; j++) {
+          const dx = activeCoords[i].x - activeCoords[j].x;
+          const dy = activeCoords[i].y - activeCoords[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < maxDistance) {
+            const alpha = (1 - dist / maxDistance) * (0.35 + audioLevel * 0.4);
+            ctx.strokeStyle = isListening ? `rgba(248, 113, 113, ${alpha})` : (isProcessing ? `rgba(251, 191, 36, ${alpha})` : `rgba(56, 189, 248, ${alpha})`);
+            ctx.beginPath();
+            ctx.moveTo(activeCoords[i].x, activeCoords[i].y);
+            ctx.lineTo(activeCoords[j].x, activeCoords[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      ctx.restore();
+      requestAnimationFrame(drawArcReactorParticles);
+    }
+    requestAnimationFrame(drawArcReactorParticles);
+
+    // ============================================================
+    // Speech Recognition
+    // ============================================================
+    let recognition = null;
+    let currentSpeechText = "";
+
+    function setupSpeechRecognition() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        return null;
+      }
+      const rec = new SpeechRec();
+      rec.continuous = false;
+      rec.interimResults = true;
+      rec.lang = 'fr-FR';
+
+      rec.onstart = () => {
+        isListening = true;
+        currentSpeechText = "";
+        updateReactorState("listening");
+      };
+
+      rec.onresult = (e) => {
+        let transcript = '';
+        for (let i = 0; i < e.results.length; i++) {
+          transcript += e.results[i][0].transcript;
+        }
+        currentSpeechText = transcript.trim();
+        const promptEl = document.getElementById('transcriptPrompt');
+        promptEl.classList.remove('hidden');
+        promptEl.textContent = `« ${currentSpeechText} »`;
+      };
+
+      rec.onerror = (e) => {
+        isListening = false;
+        updateReactorState("idle");
+      };
+
+      rec.onend = () => {
+        isListening = false;
+        if (currentSpeechText && !isProcessing) {
+          sendCommand(currentSpeechText);
+          currentSpeechText = "";
+        } else {
+          updateReactorState("idle");
+        }
+      };
+
+      return rec;
     }
 
-    function activateListening() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert("La reconnaissance vocale par navigateur nécessite Safari ou Chrome.");
+    function toggleMicrophone() {
+      if (isProcessing) return;
+      if (!recognition) recognition = setupSpeechRecognition();
+
+      if (!recognition) {
+        alert("Microphone non disponible dans ce navigateur. Utilisez la zone de texte en bas.");
         return;
       }
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'fr-FR';
-      recognition.start();
 
-      const statusBadge = document.getElementById('statusBadge');
-      statusBadge.innerHTML = `<span class="animate-pulse">🎙️</span> ÉCOUTE EN COURS...`;
-      statusBadge.className = "inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-red-500/20 text-red-300 border border-red-500/40 mb-3";
-
-      recognition.onresult = function(event) {
-        const text = event.results[0][0].transcript;
-        document.getElementById('userInput').value = text;
-        handleQuery(null);
-      };
+      if (isListening) {
+        recognition.stop();
+      } else {
+        try {
+          recognition.start();
+        } catch (e) {
+          recognition.stop();
+        }
+      }
     }
+
+    function updateReactorState(state) {
+      const core = document.getElementById('coreReactor');
+      const icon = document.getElementById('coreIcon');
+      const label = document.getElementById('coreLabel');
+      const statusPill = document.getElementById('statusPill');
+
+      if (state === "listening") {
+        core.className = "relative z-20 w-32 h-32 md:w-40 md:h-40 rounded-full holo-card flex flex-col items-center justify-center border-2 border-red-500 scale-105 shadow-[0_0_70px_rgba(239,68,68,0.85)] animate-pulse";
+        icon.textContent = "🔴";
+        label.textContent = "ÉCOUTE EN COURS...";
+        statusPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-400 animate-ping"></span> MICROPHONE ACTIF // PARLEZ`;
+        statusPill.className = "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-red-500/20 text-red-300 border border-red-500/40 mb-3 shadow-lg shadow-red-500/20";
+      } else if (state === "processing") {
+        core.className = "relative z-20 w-32 h-32 md:w-40 md:h-40 rounded-full holo-card flex flex-col items-center justify-center border-2 border-amber-400 scale-105 shadow-[0_0_70px_rgba(251,191,36,0.85)]";
+        icon.textContent = "⚡";
+        label.textContent = "TRAITEMENT OLLAMA...";
+        statusPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-spin"></span> ANALYSE HERMES EN COURS...`;
+        statusPill.className = "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-amber-500/20 text-amber-300 border border-amber-500/40 mb-3 shadow-lg shadow-amber-500/20";
+      } else {
+        core.className = "relative z-20 w-32 h-32 md:w-40 md:h-40 rounded-full holo-card flex flex-col items-center justify-center border border-cyan-400/80 glow-core shadow-[0_0_60px_rgba(56,189,248,0.45)]";
+        icon.textContent = "🎙️";
+        label.textContent = "CLIQUEZ POUR PARLER";
+        statusPill.innerHTML = `<span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span> SYSTÈME LOCAL EN LIGNE // PRÊT`;
+        statusPill.className = "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-hud bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 mb-3 shadow-md";
+      }
+    }
+
+    // ============================================================
+    // Local API Chat
+    // ============================================================
+    async function sendCommand(text) {
+      if (!text || isProcessing) return;
+      isProcessing = true;
+
+      const speechEl = document.getElementById('jarvisSpeech');
+      const promptEl = document.getElementById('transcriptPrompt');
+
+      promptEl.classList.remove('hidden');
+      promptEl.textContent = `« ${text} »`;
+      updateReactorState("processing");
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: text })
+        });
+
+        const data = await res.json();
+        const reply = data.reply || "À vos ordres, monsieur.";
+
+        speechEl.textContent = `« ${reply} »`;
+
+        isSpeaking = true;
+        const estDurationMs = Math.max(2000, reply.length * 65);
+        setTimeout(() => { isSpeaking = false; }, estDurationMs);
+
+        updateReactorState("idle");
+
+      } catch (err) {
+        speechEl.textContent = "Erreur de transmission avec le serveur local Jarvis.";
+        updateReactorState("idle");
+      } finally {
+        setTimeout(() => { isProcessing = false; }, 400);
+      }
+    }
+
+    function handleManualInput(e) {
+      e.preventDefault();
+      const input = document.getElementById('textInput');
+      const val = input.value.trim();
+      if (val) {
+        sendCommand(val);
+        input.value = '';
+      }
+    }
+
+    function quickAction(promptText) {
+      document.getElementById('textInput').value = promptText;
+      sendCommand(promptText);
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault();
+        toggleMicrophone();
+      }
+    });
+
+    let activeModelName = "Hermes 3";
+    function toggleActiveModel() {
+      if (activeModelName === "Hermes 3") {
+        activeModelName = "Llama 3.2";
+        document.getElementById('badgeModel').textContent = "Llama 3.2";
+        document.getElementById('badgeModel').className = "text-emerald-400";
+        sendCommand("active le mode llama");
+      } else {
+        activeModelName = "Hermes 3";
+        document.getElementById('badgeModel').textContent = "Hermes 3";
+        document.getElementById('badgeModel').className = "text-amber-400";
+        sendCommand("active le mode hermes");
+      }
+    }
+
+    async function updateTelemetry() {
+      try {
+        const r = await fetch('/api/telemetry');
+        const data = await r.json();
+        if (data.batterie) document.getElementById('badgeBattery').textContent = data.batterie.split(' ')[0];
+        if (data.gpu) document.getElementById('badgeGpu').textContent = data.gpu.includes('Radeon') ? 'Radeon 560' : 'Intel HD 630';
+      } catch (e) {}
+    }
+    setInterval(updateTelemetry, 15000);
+    updateTelemetry();
   </script>
 </body>
 </html>
