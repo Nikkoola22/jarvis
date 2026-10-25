@@ -113,17 +113,28 @@
       box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.95);
     }
 
-    /* HAL Eye Optical Breathing Pulse */
+    /* HAL Eye Optical Breathing Pulse & Floating Monolith */
     @keyframes hal-breathe {
       0%, 100% {
         box-shadow: 0 0 35px rgba(239, 68, 68, 0.6), 0 0 70px rgba(225, 29, 72, 0.35);
       }
       50% {
-        box-shadow: 0 0 60px rgba(255, 59, 0, 0.95), 0 0 100px rgba(239, 68, 68, 0.7);
+        box-shadow: 0 0 65px rgba(255, 59, 0, 0.95), 0 0 110px rgba(239, 68, 68, 0.7);
       }
     }
     .hal-eye-active {
       animation: hal-breathe 4s infinite ease-in-out;
+    }
+    @keyframes hal-float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-5px);
+      }
+    }
+    .hal-monolith-live {
+      animation: hal-float 6s ease-in-out infinite;
     }
 
     /* Mobile & Touch Optimizations */
@@ -156,9 +167,7 @@
       <div>
         <div class="flex items-center gap-1.5 sm:gap-2">
           <span class="font-hal font-black tracking-widest text-base sm:text-lg text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-rose-500 to-amber-300 uppercase">HAL 9000</span>
-          <span class="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-300 border border-rose-500/30 font-hud tracking-wider">DISCOVERY</span>
         </div>
-        <div class="text-[9px] font-hud text-slate-400 tracking-wider hidden sm:block">HEURISTICALLY PROGRAMMED ALGORITHMIC COMPUTER</div>
       </div>
     </div>
 
@@ -168,11 +177,6 @@
       <div id="badgeMacLink" onclick="toggleConfigModal()" class="holo-card px-2 sm:px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 cursor-pointer text-slate-400 hover:border-rose-500/40 transition-all active:scale-95" title="Liaison Mac Local — Cliquez pour configurer">
         <span id="macLed" class="w-2 h-2 rounded-full bg-slate-500 transition-colors"></span>
         <strong id="macLabel" class="text-slate-400 tracking-wide text-[10px]">MAC</strong>
-      </div>
-
-      <div class="holo-card px-2.5 py-1.5 rounded-xl items-center gap-1.5 hidden md:flex">
-        <span class="text-slate-400">RÉSEAU</span>
-        <strong id="badgeRegion" class="text-rose-300 tracking-wide">Vercel Edge</strong>
       </div>
 
       <div class="holo-card px-2 py-1.5 rounded-xl items-center gap-1.5 hidden lg:flex">
@@ -241,7 +245,7 @@
     </div>
 
     <!-- Authentic HAL 9000 Monolith Column Faceplate -->
-    <div class="relative w-[250px] sm:w-[320px] md:w-[360px] flex flex-col items-center justify-center hal-monolith p-3.5 sm:p-6 my-1.5 sm:my-2 group transition-all duration-500 shadow-2xl">
+    <div class="relative w-[250px] sm:w-[320px] md:w-[360px] flex flex-col items-center justify-center hal-monolith hal-monolith-live p-4 sm:p-6 my-1.5 sm:my-2 group transition-all duration-500 shadow-2xl">
       
       <!-- Top HAL 9000 Blue & Silver Metal Nameplate -->
       <div class="hal-badge px-4 sm:px-5 py-1 sm:py-1.5 rounded-md flex items-center gap-2 sm:gap-2.5 mb-2.5 sm:mb-4 shadow-lg border border-sky-500/50">
@@ -251,7 +255,7 @@
       </div>
 
       <!-- HAL 9000 Iconic Fisheye Camera Lens (Click to Talk) -->
-      <div class="relative w-36 h-36 sm:w-48 sm:h-48 md:w-52 md:h-52 rounded-full hal-lens-bezel p-2.5 sm:p-3 flex items-center justify-center cursor-pointer active:scale-95 transition-transform duration-300 hal-eye-glow" onclick="toggleMicrophone()">
+      <div class="relative w-36 h-36 sm:w-48 sm:h-48 md:w-52 md:h-52 rounded-full hal-lens-bezel p-2.5 sm:p-3 flex items-center justify-center cursor-pointer active:scale-95 transition-transform duration-300 hal-eye-glow hal-eye-active" onclick="toggleMicrophone()" title="Cliquer pour parler à HAL 9000">
         
         <!-- Matte Black Stepped Lens Barrel -->
         <div class="relative w-full h-full rounded-full bg-[#060709] border border-slate-700/80 flex items-center justify-center overflow-hidden shadow-inner">
@@ -261,18 +265,8 @@
 
           <!-- Glass Dome Specular Highlight Overlay -->
           <div class="absolute inset-0 rounded-full pointer-events-none bg-[radial-gradient(circle_at_35%_25%,rgba(255,255,255,0.4)_0%,rgba(255,255,255,0.06)_28%,transparent_65%)] shadow-inner"></div>
-
-          <!-- Discrete Center Icon & Label on Hover/State -->
-          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20">
-            <span id="coreIcon" class="text-xl sm:text-2xl filter drop-shadow-[0_0_12px_rgba(255,0,56,0.9)] opacity-0 group-hover:opacity-80 transition-opacity">🎙️</span>
-            <span id="coreLabel" class="text-[7px] sm:text-[9px] font-mono tracking-widest text-rose-300 uppercase opacity-0 group-hover:opacity-100 transition-opacity mt-0.5">PARLER</span>
-          </div>
         </div>
       </div>
-
-      <!-- Speaker / Acoustic Grille below Eye -->
-      <div class="w-24 sm:w-32 h-5 sm:h-7 hal-speaker-grille rounded border border-slate-700/60 mt-3 sm:mt-4"></div>
-      <div class="text-[8px] sm:text-[9px] font-mono text-slate-400 tracking-widest mt-1 uppercase">DISCOVERY ONE • MISSION UNIT</div>
     </div>
 
     <!-- Live Status Pill -->
@@ -281,12 +275,10 @@
     </div>
 
     <!-- Speech Holographic Dialogue Box -->
-    <div class="holo-card rounded-2xl p-3 sm:p-4 md:p-5 w-full max-w-2xl text-left border border-rose-500/30 min-h-[70px] sm:min-h-[85px] flex flex-col justify-center transition-all duration-300 shadow-2xl relative overflow-hidden">
+    <div id="speechBox" class="holo-card rounded-2xl p-3 sm:p-4 md:p-5 w-full max-w-2xl text-left border border-rose-500/30 min-h-[50px] flex flex-col justify-center transition-all duration-300 shadow-2xl relative overflow-hidden hidden">
       <div class="absolute top-0 left-0 w-12 sm:w-16 h-[2px] bg-rose-500"></div>
       <div id="transcriptPrompt" class="text-[10px] sm:text-xs font-hud text-rose-400/90 mb-1 hidden truncate"></div>
-      <p id="jarvisSpeech" class="text-slate-100 text-xs sm:text-sm md:text-base font-serif-quote italic leading-relaxed tracking-wide font-normal">
-        « Bonjour monsieur Nikkoola. Je suis un ordinateur HAL 9000. Tous mes sous-systèmes fonctionnent à la perfection et j'attends vos instructions. »
-      </p>
+      <p id="jarvisSpeech" class="text-slate-100 text-xs sm:text-sm md:text-base font-serif-quote italic leading-relaxed tracking-wide font-normal"></p>
     </div>
 
     <!-- Quick Action Chips (Swipeable Rail on Mobile) -->
@@ -809,59 +801,74 @@ void main(){
     window.addEventListener('resize', resize);
     resize();
 
-    // Mouse Parallax Interaction
+    // Mouse & Touch Parallax / Gaze Interaction
     let mouse = { x: width / 2, y: height / 2, targetX: width / 2, targetY: height / 2 };
-    window.addEventListener('mousemove', (e) => {
+    let lastUserActivity = Date.now();
+    let tickRotation1 = 0;
+    let tickRotation2 = 0;
+    let breathPhase = 0;
+
+    function updatePointerPos(clientX, clientY) {
+      if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
-      mouse.targetX = e.clientX - rect.left;
-      mouse.targetY = e.clientY - rect.top;
-    });
+      mouse.targetX = clientX - rect.left;
+      mouse.targetY = clientY - rect.top;
+      lastUserActivity = Date.now();
+    }
+    window.addEventListener('mousemove', (e) => updatePointerPos(e.clientX, e.clientY));
+    window.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches[0]) updatePointerPos(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches && e.touches[0]) updatePointerPos(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
 
     let isListening = false;
     let isSpeaking = false;
     let isProcessing = false;
     let audioLevel = 0;
 
-    // Generate Swarm of 140 Particles orbiting the Arc Reactor
-    const PARTICLE_COUNT = 140;
-    const particles = [];
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      particles.push({
-        angle: Math.random() * Math.PI * 2,
-        radius: 80 + Math.random() * 150,
-        baseRadius: 80 + Math.random() * 150,
-        speed: (0.004 + Math.random() * 0.012) * (Math.random() > 0.5 ? 1 : -1),
-        radialSpeed: 0.02 + Math.random() * 0.03,
-        radialOffset: Math.random() * Math.PI * 2,
-        size: 1.2 + Math.random() * 2.8,
-        color: Math.random() > 0.15 ? '#38bdf8' : (Math.random() > 0.5 ? '#67e8f9' : '#fbbf24'),
-        alpha: 0.3 + Math.random() * 0.7,
-        z: Math.random() * 2 - 1 // 3D depth
-      });
-    }
-
-    let ringAngle1 = 0;
-    let ringAngle2 = 0;
-    let ringAngle3 = 0;
-
     function drawHalEye() {
       ctx.clearRect(0, 0, width, height);
       const cx = width / 2;
       const cy = height / 2;
+      const now = Date.now();
+      const timeSec = now * 0.001;
 
-      // Mouse Parallax smoothing
-      mouse.x += (mouse.targetX - mouse.x) * 0.05;
-      mouse.y += (mouse.targetY - mouse.y) * 0.05;
-      const offsetX = (mouse.x - cx) * 0.05;
-      const offsetY = (mouse.y - cy) * 0.05;
+      // Autonomous Gaze / Gaze tracking smoothing
+      let tx = mouse.targetX;
+      let ty = mouse.targetY;
+      if (now - lastUserActivity > 2500) {
+        // Subtle autonomous scan when idle (HAL watching the room)
+        tx = cx + Math.sin(timeSec * 0.6) * (width * 0.12) + Math.cos(timeSec * 0.25) * (width * 0.06);
+        ty = cy + Math.cos(timeSec * 0.45) * (height * 0.08) + Math.sin(timeSec * 0.18) * (height * 0.04);
+      }
 
-      // Dynamic Audio Level Calculation
+      mouse.x += (tx - mouse.x) * 0.055;
+      mouse.y += (ty - mouse.y) * 0.055;
+
+      const r = Math.min(width, height) * 0.46;
+
+      // Parallax Gaze Vector (clamped so pupil stays organically within lens bounds)
+      const dx = mouse.x - cx;
+      const dy = mouse.y - cy;
+      const dist = Math.hypot(dx, dy);
+      const maxGaze = r * 0.16;
+      const gazeDist = Math.min(dist * 0.08, maxGaze);
+      const gazeAngle = Math.atan2(dy, dx);
+      const pupilOffsetX = Math.cos(gazeAngle) * gazeDist;
+      const pupilOffsetY = Math.sin(gazeAngle) * gazeDist;
+
+      // Audio & Organic Breathing Modulation
+      breathPhase += 0.025;
+      const organicBreath = (Math.sin(breathPhase) * 0.5 + 0.5); // 0 to 1
+
       if (isSpeaking) {
-        audioLevel = 0.5 + Math.sin(Date.now() * 0.02) * 0.35 + Math.sin(Date.now() * 0.04) * 0.15;
+        audioLevel = 0.55 + Math.sin(now * 0.02) * 0.35 + Math.sin(now * 0.045) * 0.15;
       } else if (isListening) {
-        audioLevel = 0.4 + Math.sin(Date.now() * 0.015) * 0.3;
+        audioLevel = 0.45 + Math.sin(now * 0.018) * 0.3;
       } else if (isProcessing) {
-        audioLevel = 0.3 + Math.sin(Date.now() * 0.025) * 0.2;
+        audioLevel = 0.35 + Math.sin(now * 0.03) * 0.25;
       } else {
         audioLevel = Math.max(0, audioLevel * 0.94);
       }
@@ -870,90 +877,134 @@ void main(){
       const eqBars = document.querySelectorAll('#equalizerBars div');
       if (eqBars.length) {
         eqBars.forEach((bar, idx) => {
-          const val = (isListening || isSpeaking) ? Math.min(32, Math.max(4, Math.sin(Date.now() * 0.01 + idx) * 14 + (audioLevel * 24))) : 4;
+          const val = (isListening || isSpeaking) ? Math.min(32, Math.max(4, Math.sin(now * 0.01 + idx) * 14 + (audioLevel * 24))) : 4;
           bar.style.height = `${val}px`;
           bar.style.backgroundColor = isListening ? '#f43f5e' : (isSpeaking ? '#fb923c' : '#ef4444');
         });
       }
 
-      const r = Math.min(width, height) * 0.46;
-      const pulseR = r + (audioLevel * 18);
-
-      ctx.save();
-      ctx.translate(cx + offsetX, cy + offsetY);
-
-      // 1. Deep Black Outer Fisheye Barrel Aperture
+      // 1. Deep Matte Black Lens Barrel Base
       ctx.beginPath();
-      ctx.arc(0, 0, r, 0, Math.PI * 2);
-      ctx.fillStyle = '#060709';
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle = '#050608';
       ctx.fill();
 
-      // 2. Concentric Stepped Antireflective Rings (Nikon 8mm Nikkor Fisheye)
-      const ringSteps = [0.94, 0.88, 0.82, 0.74, 0.65, 0.55];
+      // 2. Optical Precision Stepped Rings & Rotating Calibrated Aperture Ticks
+      tickRotation1 += 0.0018;
+      tickRotation2 -= 0.0012;
+
+      const ringSteps = [0.94, 0.88, 0.80, 0.70, 0.58];
       ringSteps.forEach((s, idx) => {
         ctx.beginPath();
-        ctx.arc(0, 0, r * s, 0, Math.PI * 2);
-        ctx.strokeStyle = (idx % 2 === 0) ? 'rgba(71, 85, 105, 0.45)' : 'rgba(30, 41, 59, 0.8)';
-        ctx.lineWidth = 1.8;
+        ctx.arc(cx, cy, r * s, 0, Math.PI * 2);
+        ctx.strokeStyle = (idx % 2 === 0) ? 'rgba(71, 85, 105, 0.4)' : 'rgba(30, 41, 59, 0.75)';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
       });
 
-      // 3. Diffuse Crimson/Ruby Optical Atmospheric Bloom
-      const haloGrad = ctx.createRadialGradient(0, 0, r * 0.08, 0, 0, pulseR * 0.85);
-      haloGrad.addColorStop(0, 'rgba(255, 230, 100, 0.95)');
-      haloGrad.addColorStop(0.15, 'rgba(255, 80, 0, 0.9)');
-      haloGrad.addColorStop(0.42, 'rgba(239, 68, 68, 0.85)');
-      haloGrad.addColorStop(0.72, 'rgba(159, 18, 57, 0.45)');
-      haloGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      // Aperture Micro-Ticks on Outer Rings
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(tickRotation1);
+      const tickCount = 32;
+      for (let i = 0; i < tickCount; i++) {
+        const ang = (i / tickCount) * Math.PI * 2;
+        const innerT = r * 0.89;
+        const outerT = (i % 4 === 0) ? r * 0.94 : r * 0.915;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(ang) * innerT, Math.sin(ang) * innerT);
+        ctx.lineTo(Math.cos(ang) * outerT, Math.sin(ang) * outerT);
+        ctx.strokeStyle = (i % 4 === 0) ? 'rgba(244, 63, 94, 0.65)' : 'rgba(100, 116, 139, 0.35)';
+        ctx.lineWidth = (i % 4 === 0) ? 1.8 : 1.0;
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // 3. Diffuse Atmospheric Crimson Bloom (Pulses with breathing & audio)
+      const bloomRadius = r * (0.75 + organicBreath * 0.08 + audioLevel * 0.15);
+      const bloomGrad = ctx.createRadialGradient(
+        cx + pupilOffsetX * 0.5, cy + pupilOffsetY * 0.5, r * 0.05,
+        cx, cy, bloomRadius
+      );
+      bloomGrad.addColorStop(0, 'rgba(255, 230, 100, 0.95)');
+      bloomGrad.addColorStop(0.12, 'rgba(255, 75, 0, 0.9)');
+      bloomGrad.addColorStop(0.38, 'rgba(239, 68, 68, 0.8)');
+      bloomGrad.addColorStop(0.72, 'rgba(159, 18, 57, 0.38)');
+      bloomGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
       ctx.beginPath();
-      ctx.arc(0, 0, pulseR * 0.85, 0, Math.PI * 2);
-      ctx.fillStyle = haloGrad;
+      ctx.arc(cx, cy, bloomRadius, 0, Math.PI * 2);
+      ctx.fillStyle = bloomGrad;
       ctx.fill();
 
-      // 4. Optical Eye Iris (Deep Ruby & Intense Crimson with Radial Fibers)
-      const irisR = r * 0.46 + (audioLevel * 14);
-      const irisGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, irisR);
+      // 4. Shimmering Radial Iris Filaments (40 micro-fibers)
+      ctx.save();
+      ctx.translate(cx + pupilOffsetX * 0.7, cy + pupilOffsetY * 0.7);
+      const filamentCount = 40;
+      const irisMaxR = r * 0.48 + (audioLevel * 12);
+      for (let i = 0; i < filamentCount; i++) {
+        const fAngle = (i / filamentCount) * Math.PI * 2 + tickRotation2 * 0.5;
+        const filamentLen = irisMaxR * (0.8 + Math.sin(timeSec * 2.5 + i * 0.8) * 0.2);
+        const fAlpha = 0.2 + (Math.sin(timeSec * 3 + i) * 0.5 + 0.5) * 0.45;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(fAngle) * (r * 0.08), Math.sin(fAngle) * (r * 0.08));
+        ctx.lineTo(Math.cos(fAngle) * filamentLen, Math.sin(fAngle) * filamentLen);
+        ctx.strokeStyle = `rgba(255, ${60 + (i % 5) * 25}, 0, ${fAlpha})`;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // 5. Optical Eye Iris (Deep Ruby & Intense Crimson Disc)
+      const irisCenterPx = cx + pupilOffsetX;
+      const irisCenterPy = cy + pupilOffsetY;
+      const irisR = r * 0.44 + (organicBreath * 3) + (audioLevel * 14);
+
+      const irisGrad = ctx.createRadialGradient(irisCenterPx, irisCenterPy, 0, irisCenterPx, irisCenterPy, irisR);
       irisGrad.addColorStop(0, '#ffffff');
-      irisGrad.addColorStop(0.12, '#fff176');
-      irisGrad.addColorStop(0.32, '#ff3b00');
-      irisGrad.addColorStop(0.68, '#e11d48');
+      irisGrad.addColorStop(0.10, '#fff176');
+      irisGrad.addColorStop(0.28, '#ff3b00');
+      irisGrad.addColorStop(0.65, '#e11d48');
       irisGrad.addColorStop(1, '#881337');
 
       ctx.beginPath();
-      ctx.arc(0, 0, irisR, 0, Math.PI * 2);
+      ctx.arc(irisCenterPx, irisCenterPy, irisR, 0, Math.PI * 2);
       ctx.fillStyle = irisGrad;
       ctx.shadowColor = '#ff0038';
-      ctx.shadowBlur = 35 + (audioLevel * 35);
+      ctx.shadowBlur = 32 + (organicBreath * 12) + (audioLevel * 40);
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      // 5. Intense Fiery Pinpoint Pupil (The Soul of HAL 9000)
-      const centerGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.12);
-      centerGrad.addColorStop(0, '#ffffff');
-      centerGrad.addColorStop(0.45, '#fff9a6');
-      centerGrad.addColorStop(0.8, '#ff9100');
-      centerGrad.addColorStop(1, 'rgba(255, 60, 0, 0)');
+      // 6. Intense Fiery Pinpoint Pupil (The Soul of HAL 9000 - Dilation & Shimmer)
+      const pupilCoreR = r * (0.10 + organicBreath * 0.025 + audioLevel * 0.05);
+      const pupilGrad = ctx.createRadialGradient(irisCenterPx, irisCenterPy, 0, irisCenterPx, irisCenterPy, pupilCoreR * 1.5);
+      pupilGrad.addColorStop(0, '#ffffff');
+      pupilGrad.addColorStop(0.40, '#fff9a6');
+      pupilGrad.addColorStop(0.80, '#ff9100');
+      pupilGrad.addColorStop(1, 'rgba(255, 60, 0, 0)');
 
       ctx.beginPath();
-      ctx.arc(0, 0, r * 0.12, 0, Math.PI * 2);
-      ctx.fillStyle = centerGrad;
+      ctx.arc(irisCenterPx, irisCenterPy, pupilCoreR * 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = pupilGrad;
       ctx.fill();
 
-      // 6. Fisheye Glass Dome Curved Specular Reflection (Curved Crescent at 10 O'Clock)
+      // 7. Fisheye Glass Dome Curved Specular Reflection (Parallax Shifted)
       ctx.save();
+      ctx.translate(cx, cy);
       ctx.rotate(-Math.PI / 4.2);
       ctx.beginPath();
-      ctx.ellipse(-r * 0.32, -r * 0.32, r * 0.28, r * 0.09, 0, 0, Math.PI * 2);
+      // Subtle opposite parallax glint
+      const glintX = -r * 0.32 - pupilOffsetX * 0.25;
+      const glintY = -r * 0.32 - pupilOffsetY * 0.25;
+      ctx.ellipse(glintX, glintY, r * 0.28, r * 0.09, 0, 0, Math.PI * 2);
       const glareGrad = ctx.createLinearGradient(-r * 0.5, -r * 0.4, 0, 0);
-      glareGrad.addColorStop(0, 'rgba(255, 255, 255, 0.65)');
-      glareGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.18)');
+      glareGrad.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
+      glareGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)');
       glareGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
       ctx.fillStyle = glareGrad;
       ctx.fill();
       ctx.restore();
 
-      ctx.restore();
       requestAnimationFrame(drawHalEye);
     }
     requestAnimationFrame(drawHalEye);
@@ -1239,6 +1290,8 @@ void main(){
 
     async function executeQuickMacAction(command) {
       playSciFiChime('select');
+      const box = document.getElementById('speechBox');
+      if (box) box.classList.remove('hidden');
       const speechEl = document.getElementById('jarvisSpeech');
       speechEl.textContent = `Transmission de l'action système : « ${command} »...`;
       
@@ -1391,6 +1444,8 @@ void main(){
       isProcessing = true;
       playSciFiChime('process');
 
+      const box = document.getElementById('speechBox');
+      if (box) box.classList.remove('hidden');
       const speechEl = document.getElementById('jarvisSpeech');
       const promptEl = document.getElementById('transcriptPrompt');
 
