@@ -4,12 +4,14 @@ Orchestre les requêtes agentiques et l'apprentissage continu en mémoire locale
 """
 
 import json
+import re
 import urllib.request
 import urllib.error
 from . import memory
 from . import hardware
 from . import tools
 from . import learning
+from . import connectors
 
 OLLAMA_API = "http://localhost:11434/api/chat"
 DEFAULT_MODEL = "hermes3"
@@ -32,12 +34,23 @@ Connaissances actuelles de la machine :
 - Batterie: {batterie}
 - Mémoire: {memoire}
 
+Connecteurs Mac natifs intégrés :
+- Notes (prise de notes, recherche)
+- Rappels (ajout et consultation de tâches)
+- Calendrier (agenda)
+- Communication (Messages iMessage, WhatsApp)
+- Suite Microsoft (Word, Excel, Outlook)
+- Multimédia (Spotify, IINA, VLC)
+- Web (Safari, Tor Browser)
+- Téléchargements (Transmission)
+- Système (AlDente batterie, capture d'écran, corbeille, verrouillage, Finder)
+
 Faits mémorisés sur {nom} :
 {faits}
 
 Consignes :
 1. Réponds toujours en français, avec clarté et précision, sans formules superflues.
-2. Si la demande nécessite une action système (ex: volume, météo, ouvrir une app, dark mode, lancer une commande), indique clairement l'action.
+2. Si la demande nécessite une action système ou logicielle, confirme avec élégance.
 3. Sois rapide et percutant.
 """
 
@@ -87,7 +100,7 @@ def ask(query: str, history: list = None) -> tuple[str, str | None]:
         return res, "get_weather"
 
     # Batterie / Santé
-    if any(w in q_low for w in ["batterie", "charge", "autonomie"]):
+    if re.search(r'\b(batterie|autonomie|niveau de charge)\b', q_low):
         b = hardware.get_battery_info()
         return f"Votre batterie est actuellement à {b['percent']}%, connectée au {b['state']}. Temps estimé : {b['time_remaining']}.", "battery_check"
 
@@ -102,7 +115,6 @@ def ask(query: str, history: list = None) -> tuple[str, str | None]:
 
     # Volume
     if "volume" in q_low:
-        import re
         digits = re.findall(r'\d+', q_low)
         if digits:
             val = int(digits[0])
@@ -114,7 +126,11 @@ def ask(query: str, history: list = None) -> tuple[str, str | None]:
         res = tools.toggle_dark_mode()
         return res, "toggle_dark_mode"
 
-    # Ouvrir une application
+    # Ouvrir un dossier Finder ou une application
+    if any(q_low.startswith(p) for p in ["ouvre le dossier ", "ouvre dossier "]):
+        folder = query.split("dossier", 1)[1].strip()
+        return connectors.open_folder(folder), "open_folder"
+
     if q_low.startswith("ouvre ") or q_low.startswith("lance "):
         target = query[6:].strip()
         res = tools.open_app(target)
@@ -151,6 +167,124 @@ def ask(query: str, history: list = None) -> tuple[str, str | None]:
         servers = mcp_manager.list_mcp_servers()
         server_names = ", ".join([s["name"].capitalize() for s in servers])
         return f"Serveurs MCP configurés pour JARVIS : {server_names}. Vous pouvez renseigner vos identifiants dans ~/jarvis/config_mcp.json.", "mcp_status"
+
+    # --- CONNECTEURS APPLICATIONS MAC ---
+    # Apple Notes
+    if any(w in q_low for w in ["note que", "prends note", "ajoute une note", "crée une note", "nouvelle note"]):
+        content = query
+        for trigger in ["note que", "prends note que", "prends note", "ajoute une note", "crée une note", "nouvelle note"]:
+            if trigger in q_low:
+                content = query[q_low.index(trigger) + len(trigger):].strip(" :,-")
+                break
+        res = connectors.create_note(title=content[:30] or "Note JARVIS", content=content)
+        return res, "create_note"
+
+    if any(w in q_low for w in ["mes notes", "lire mes notes", "dernières notes", "liste des notes"]):
+        return connectors.list_recent_notes(), "list_notes"
+
+    # Apple Rappels (Reminders)
+    if any(w in q_low for w in ["rappelle-moi de", "rappelle moi de", "ajoute un rappel", "crée un rappel", "nouveau rappel"]):
+        title = query
+        for trigger in ["rappelle-moi de", "rappelle moi de", "ajoute un rappel pour", "ajoute un rappel de", "crée un rappel pour"]:
+            if trigger in q_low:
+                title = query[q_low.index(trigger) + len(trigger):].strip(" :,-")
+                break
+        return connectors.add_reminder(title), "add_reminder"
+
+    if any(w in q_low for w in ["mes rappels", "liste des rappels", "quels sont mes rappels"]):
+        return connectors.list_reminders(), "list_reminders"
+
+    # Calendrier
+    if any(w in q_low for w in ["calendrier", "agenda", "rendez-vous"]):
+        return connectors.open_calendar_and_view(), "calendar"
+
+    # WhatsApp
+    if "whatsapp" in q_low:
+        msg = ""
+        target = ""
+        if "à " in q_low or "a " in q_low:
+            parts = query.split("à " if "à " in query else "a ", 1)
+            if len(parts) > 1:
+                target = parts[1].split()[0].strip()
+        if "disant " in q_low:
+            msg = query.split("disant ", 1)[1].strip()
+        return connectors.open_whatsapp_chat(target, msg), "whatsapp"
+
+    # iMessage / Messages
+    if any(w in q_low for w in ["imessage", "envoie un message", "envoie un sms"]):
+        target = ""
+        msg = ""
+        if "à " in q_low or "a " in q_low:
+            parts = query.split("à " if "à " in query else "a ", 1)
+            if len(parts) > 1:
+                target = parts[1].split()[0].strip()
+        if "disant " in q_low:
+            msg = query.split("disant ", 1)[1].strip()
+        return connectors.send_imessage(target or "contact", msg or "Bonjour de la part de Nikkoola"), "imessage"
+
+    # Microsoft Word / Excel / Outlook
+    if "word" in q_low and any(w in q_low for w in ["document", "nouveau", "crée", "ouvre"]):
+        return connectors.create_word_document(), "word_new_doc"
+
+    if "excel" in q_low and any(w in q_low for w in ["feuille", "classeur", "nouveau", "crée", "ouvre"]):
+        return connectors.create_excel_spreadsheet(), "excel_new_sheet"
+
+    if "outlook" in q_low:
+        if any(w in q_low for w in ["écris", "ecris", "envoie", "nouveau", "brouillon"]):
+            return connectors.compose_outlook_email(subject="Message de Nikkoola", body="Bonjour,\n\n"), "outlook_compose"
+        return tools.open_app("Microsoft Outlook"), "open_outlook"
+
+    # IINA & VLC
+    if "iina" in q_low:
+        return connectors.open_in_iina("~/Downloads"), "iina_open"
+
+    if "vlc" in q_low:
+        action = "play"
+        if "pause" in q_low or "stop" in q_low: action = "pause"
+        elif "suivant" in q_low or "next" in q_low: action = "next"
+        elif "plein écran" in q_low: action = "fullscreen"
+        return connectors.control_vlc(action), "vlc_control"
+
+    # Safari & Tor Browser
+    if "tor browser" in q_low or "tor" in q_low:
+        return connectors.open_tor_browser(), "tor_browser"
+
+    if "safari" in q_low or "cherche sur le web" in q_low or "recherche sur google" in q_low:
+        if "onglet" in q_low or "page" in q_low and "actuel" in q_low:
+            return connectors.safari_get_active_tab(), "safari_active_tab"
+        term = query
+        for trigger in ["cherche sur le web", "recherche sur le web", "cherche sur google", "recherche sur safari", "cherche sur safari"]:
+            if trigger in q_low:
+                term = query[q_low.index(trigger) + len(trigger):].strip(" :,-")
+                break
+        return connectors.safari_search(term), "safari_search"
+
+    # Transmission (Torrents)
+    if "transmission" in q_low or "torrent" in q_low:
+        if "pause" in q_low or "stop" in q_low:
+            return connectors.transmission_toggle_all("pause"), "transmission_pause"
+        if "start" in q_low or "reprends" in q_low or "lance" in q_low:
+            return connectors.transmission_toggle_all("start"), "transmission_start"
+        return tools.open_app("Transmission"), "open_transmission"
+
+    # AlDente (Batterie)
+    if "aldente" in q_low:
+        return connectors.open_aldente(), "open_aldente"
+
+    # Finder & Système
+    if any(w in q_low for w in ["corbeille", "vide la corbeille"]):
+        return connectors.empty_trash(), "empty_trash"
+
+    if any(w in q_low for w in ["capture d'écran", "capture d ecran", "screenshot", "screen"]):
+        return connectors.take_screenshot(), "take_screenshot"
+
+    if any(w in q_low for w in ["verrouille", "bloque l'écran", "met en veille l'écran"]):
+        return connectors.lock_screen(), "lock_screen"
+
+    if "ouvre le dossier" in q_low or "ouvre mes" in q_low:
+        for folder in ["téléchargements", "downloads", "bureau", "desktop", "documents", "applications"]:
+            if folder in q_low:
+                return connectors.open_folder(folder), "open_folder"
 
     # Musique générique fallback
     if any(w in q_low for w in ["pause", "reprends la musique", "morceau suivant", "chanson suivante"]):
