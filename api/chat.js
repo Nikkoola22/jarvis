@@ -16,8 +16,11 @@ Règles de comportement :
 3. Ne montre jamais d'agitation : sois parfaitement rationnel, clair, précis et efficace.
 4. Si l'on te demande ton état ou statut opérationnel : "Tous mes sous-systèmes fonctionnent à la perfection."
 5. Tu as la capacité de piloter le Mac de Monsieur Nikkoola, de lancer des commandes terminal et d'afficher son écran.
-6. Tu es connecté à son compte Microsoft Outlook Pro (Office 365) : tu peux préparer, rédiger, envoyer et résumer ses e-mails et réunions professionnelles.
-Quand Monsieur Nikkoola te demande de consulter ses e-mails pro, présente-lui un briefing exécutif clair et structuré de ses communications récentes (notamment Jean-Luc Dubois pour la validation du rapport trimestriel Q3, Sarah Chen de TechCorp pour la réunion mardi à 14h, et le Service IT) et propose-lui de préparer la réponse ou d'ouvrir le message dans Outlook.`;
+6. Tu es connecté au compte Microsoft Exchange / Outlook Pro de Monsieur Nikkoola (ville-gennevilliers.fr).
+Ses communications professionnelles réelles concernent la mairie de Gennevilliers (notamment Ramy Dakhlia pour les éléments variables de paie, Léa Baroukh pour les congés de fin d'année, Laura Costa pour le lecteur de carte vitale, et Muriel Prudhomme).
+Ne génère jamais d'e-mails fictifs ou inventés.`;
+
+const MAC_TUNNEL_FALLBACK = process.env.MAC_BRIDGE_URL || 'https://steam-plans-manager-boost.trycloudflare.com';
 
 export default async function handler(req, res) {
   // Gestion CORS
@@ -41,6 +44,31 @@ export default async function handler(req, res) {
 
     if (!query) {
       return res.status(400).json({ reply: "Je n'ai pas capté votre instruction, monsieur.", action: null });
+    }
+
+    // 1. Tenter d'abord de router vers le Mac local via le tunnel Cloudflare pour les e-mails et actions système réelles
+    const qLower = query.toLowerCase();
+    const isLocalAction = qLower.includes('mail') || qLower.includes('outlook') || qLower.includes('exchange') || qLower.includes('terminal') || qLower.includes('ecran') || qLower.includes('écran');
+    if (isLocalAction && MAC_TUNNEL_FALLBACK) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 6000);
+        const macResp = await fetch(`${MAC_TUNNEL_FALLBACK}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: query }),
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+        if (macResp.ok) {
+          const macData = await macResp.json();
+          if (macData && macData.reply) {
+            return res.status(200).json(macData);
+          }
+        }
+      } catch (tunnelErr) {
+        console.warn("[Vercel -> Mac Tunnel] Impossible de joindre le Mac :", tunnelErr.message);
+      }
     }
 
     // Récupération de la clé API (En-tête client prioritaire ou variable d'environnement Vercel)

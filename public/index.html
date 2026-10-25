@@ -275,10 +275,12 @@
     </div>
 
     <!-- Speech Holographic Dialogue Box -->
-    <div id="speechBox" class="holo-card rounded-2xl p-3 sm:p-4 md:p-5 w-full max-w-2xl text-left border border-rose-500/30 min-h-[50px] flex flex-col justify-center transition-all duration-300 shadow-2xl relative overflow-hidden hidden">
+    <div id="speechBox" class="holo-card rounded-2xl p-3 sm:p-4 md:p-5 w-full max-w-2xl text-left border border-rose-500/30 min-h-[50px] flex flex-col justify-center transition-all duration-300 shadow-2xl relative overflow-hidden hidden group/box">
       <div class="absolute top-0 left-0 w-12 sm:w-16 h-[2px] bg-rose-500"></div>
-      <div id="transcriptPrompt" class="text-[10px] sm:text-xs font-hud text-rose-400/90 mb-1 hidden truncate"></div>
-      <p id="jarvisSpeech" class="text-slate-100 text-xs sm:text-sm md:text-base font-serif-quote italic leading-relaxed tracking-wide font-normal"></p>
+      <!-- Croix de fermeture de la fenêtre des e-mails / dialogue -->
+      <button onclick="closeSpeechBox()" class="absolute top-2.5 right-2.5 w-7 h-7 rounded-lg bg-rose-500/10 hover:bg-rose-500/30 text-rose-300 hover:text-white flex items-center justify-center font-hud text-xs border border-rose-500/30 transition-all active:scale-95 cursor-pointer z-20 shadow-sm" title="Fermer la boîte de dialogue (Échap)">✕</button>
+      <div id="transcriptPrompt" class="text-[10px] sm:text-xs font-hud text-rose-400/90 mb-1 hidden truncate pr-9"></div>
+      <div id="jarvisSpeech" class="text-slate-100 text-xs sm:text-sm md:text-base font-serif-quote italic leading-relaxed tracking-wide font-normal pr-7"></div>
     </div>
 
     <!-- Quick Action Chips (Swipeable Rail on Mobile) -->
@@ -1236,14 +1238,13 @@ void main(){
     }
 
     async function checkMacBridge() {
-      const bridgeUrl = cleanBridgeUrl(config.macBridgeUrl) || 'http://localhost:8888';
-      if (!bridgeUrl) {
-        setMacLinkStatus(false);
-        return null;
-      }
+      let bridgeUrl = cleanBridgeUrl(config.macBridgeUrl) || 'http://localhost:8888';
+      const tunnelFallback = 'https://steam-plans-manager-boost.trycloudflare.com';
+
+      // 1. Essai sur le bridgeUrl configuré
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 3500);
+        const timeout = setTimeout(() => controller.abort(), 2500);
         const r = await fetch(`${bridgeUrl}/api/telemetry`, { signal: controller.signal });
         clearTimeout(timeout);
         if (r.ok) {
@@ -1252,6 +1253,23 @@ void main(){
           return data;
         }
       } catch (err) {}
+
+      // 2. Fallback automatique vers le tunnel Cloudflare mondial si localhost est injoignable (ex: sur iPhone)
+      if (bridgeUrl !== tunnelFallback) {
+        try {
+          const controller2 = new AbortController();
+          const timeout2 = setTimeout(() => controller2.abort(), 3500);
+          const r2 = await fetch(`${tunnelFallback}/api/telemetry`, { signal: controller2.signal });
+          clearTimeout(timeout2);
+          if (r2.ok) {
+            const data2 = await r2.json();
+            config.macBridgeUrl = tunnelFallback;
+            setMacLinkStatus(true, data2);
+            return data2;
+          }
+        } catch (e2) {}
+      }
+
       setMacLinkStatus(false);
       return null;
     }
@@ -1535,26 +1553,35 @@ void main(){
       let reply = "";
       let handledByMac = false;
 
-      // 1. Tenter l'exécution locale sur le Mac si le pont est actif et le routage activé
-      if (config.routeToMac && isMacConnected) {
-        const bridgeUrl = (config.macBridgeUrl || 'http://localhost:8888').replace(/\/$/, '');
-        try {
-          const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 8000);
-          const localRes = await fetch(`${bridgeUrl}/api/chat`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query: text }),
-            signal: controller.signal
-          });
-          clearTimeout(timeout);
-          if (localRes.ok) {
-            const data = await localRes.json();
-            reply = data.reply || "Action exécutée sur votre Mac, monsieur.";
-            handledByMac = true;
-          }
-        } catch (e) {
-          console.warn("Liaison Mac injoignable, bascule vers le Cloud Z.ai :", e);
+      // 1. Tenter l'exécution locale sur le Mac via bridgeUrl ou tunnel Cloudflare
+      if (config.routeToMac) {
+        const configuredUrl = (cleanBridgeUrl(config.macBridgeUrl) || 'http://localhost:8888').replace(/\/$/, '');
+        const tunnelFallback = 'https://steam-plans-manager-boost.trycloudflare.com';
+        const urlsToTry = [configuredUrl];
+        if (configuredUrl !== tunnelFallback) urlsToTry.push(tunnelFallback);
+
+        for (const bUrl of urlsToTry) {
+          try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 7000);
+            const localRes = await fetch(`${bUrl}/api/chat`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ query: text }),
+              signal: controller.signal
+            });
+            clearTimeout(timeout);
+            if (localRes.ok) {
+              const data = await localRes.json();
+              if (data && data.reply) {
+                reply = data.reply;
+                handledByMac = true;
+                config.macBridgeUrl = bUrl;
+                setMacLinkStatus(true, { modele: "MacBook Pro en ligne" });
+                break;
+              }
+            }
+          } catch (e) {}
         }
       }
 
@@ -1647,6 +1674,16 @@ void main(){
       window.speechSynthesis.speak(utter);
     }
 
+    function closeSpeechBox() {
+      const box = document.getElementById('speechBox');
+      if (box) box.classList.add('hidden');
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      isSpeaking = false;
+      updateReactorState("idle");
+    }
+
     function handleManualInput(e) {
       e.preventDefault();
       const input = document.getElementById('textInput');
@@ -1689,6 +1726,7 @@ void main(){
     // Keyboard shortcuts
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
+        closeSpeechBox();
         ['screenMonitorModal', 'terminalModal', 'configModal'].forEach(id => {
           const el = document.getElementById(id);
           if (el && !el.classList.contains('hidden')) {
