@@ -10,6 +10,7 @@ import os
 import socketserver
 import sys
 import threading
+import subprocess
 from urllib.parse import urlparse
 
 # Assurer le chargement des modules du dossier jarvis
@@ -105,6 +106,74 @@ class JarvisHandler(http.server.BaseHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json; charset=utf-8")
                 self.end_headers()
                 self.wfile.write(json.dumps({"reply": reply, "action": action}).encode("utf-8"))
+            except Exception as e:
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode("utf-8"))
+            return
+
+        if parsed.path == "/api/terminal":
+            content_length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(content_length).decode("utf-8")
+            cwd = os.path.expanduser("~")
+            try:
+                payload = json.loads(body)
+                cmd = payload.get("command", "").strip()
+                req_cwd = payload.get("cwd", "").strip()
+                if req_cwd and os.path.isdir(os.path.expanduser(req_cwd)):
+                    cwd = os.path.expanduser(req_cwd)
+
+                if not cmd:
+                    self.send_response(400)
+                    self.send_header("Content-Type", "application/json")
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"error": "Commande vide"}).encode("utf-8"))
+                    return
+
+                # Gestion spéciale de la navigation 'cd'
+                if cmd == "cd" or cmd.startswith("cd "):
+                    target = cmd[3:].strip() if cmd.startswith("cd ") else "~"
+                    target_dir = os.path.expanduser(target)
+                    if not os.path.isabs(target_dir):
+                        target_dir = os.path.normpath(os.path.join(cwd, target))
+                    if os.path.isdir(target_dir):
+                        cwd = target_dir
+                        out = ""
+                        code = 0
+                    else:
+                        out = f"cd: {target}: Aucun fichier ou dossier de ce nom\n"
+                        code = 1
+                else:
+                    res = subprocess.run(
+                        cmd,
+                        shell=True,
+                        executable="/bin/zsh",
+                        capture_output=True,
+                        text=True,
+                        timeout=25,
+                        cwd=cwd
+                    )
+                    out = res.stdout + res.stderr
+                    code = res.returncode
+
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "output": out,
+                    "returncode": code,
+                    "cwd": cwd
+                }).encode("utf-8"))
+            except subprocess.TimeoutExpired:
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "output": "⏱️ Timeout : la commande a dépassé le délai de 25s.\n",
+                    "returncode": 124,
+                    "cwd": cwd
+                }).encode("utf-8"))
             except Exception as e:
                 self.send_response(500)
                 self.send_header("Content-Type", "application/json")

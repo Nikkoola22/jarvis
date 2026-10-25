@@ -113,6 +113,12 @@
         <span class="hidden md:inline font-hud">ÉCRAN MAC</span>
       </button>
 
+      <!-- Interactive Cyber Terminal Button -->
+      <button onclick="toggleTerminalModal()" id="terminalToggleBtn" class="holo-card px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 text-emerald-400 hover:text-white hover:border-emerald-400 transition-all cursor-pointer font-hud" title="Ouvrir le Terminal macOS interactif">
+        <span>📟</span>
+        <span class="hidden md:inline">TERMINAL</span>
+      </button>
+
       <button onclick="toggleAudioMute()" id="muteBtn" class="holo-card px-2.5 py-1.5 rounded-xl text-cyan-300 hover:text-white transition-all cursor-pointer" title="Activer / Désactiver la voix">
         🔊
       </button>
@@ -291,8 +297,69 @@
           <button onclick="executeQuickMacAction('musique pause')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">🎵 Pause / Play</button>
           <button onclick="executeQuickMacAction('ouvre le Finder')" class="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-[11px] transition-all">📁 Finder</button>
           <button onclick="executeQuickMacAction('verrouille')" class="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-[11px] transition-all">🔒 Verrouiller</button>
+          <button onclick="toggleTerminalModal()" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold transition-all flex items-center gap-1">📟 Shell Terminal</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal Interactive Cyber Terminal macOS -->
+  <div id="terminalModal" class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-black/90 backdrop-blur-md hidden">
+    <div class="holo-card max-w-4xl w-full rounded-2xl p-3 sm:p-5 border border-emerald-500/50 relative shadow-[0_0_80px_rgba(16,185,129,0.35)] flex flex-col h-[92vh] sm:h-[82vh]">
+      <!-- Terminal Header -->
+      <div class="flex items-center justify-between border-b border-emerald-500/30 pb-2.5 mb-2">
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]"></div>
+          <span class="font-sci font-bold text-emerald-300 text-xs sm:text-sm tracking-widest uppercase">MARK VII // macOS TTY SHELL</span>
+          <span id="terminalCwdBadge" class="text-[10px] font-mono text-emerald-400/90 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/50 max-w-[160px] sm:max-w-[320px] truncate">~</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="clearTerminalOutput()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 font-hud text-xs transition-all">
+            🧹 Effacer
+          </button>
+          <button onclick="toggleTerminalModal()" class="text-slate-400 hover:text-white font-hud text-base px-2 py-0.5 rounded hover:bg-slate-800 transition-all">✕</button>
+        </div>
+      </div>
+
+      <!-- Terminal Output Screen -->
+      <div id="terminalOutput" class="flex-1 bg-black/95 rounded-xl p-3 sm:p-4 overflow-y-auto font-mono text-xs text-emerald-300 leading-relaxed border border-emerald-500/30 space-y-1.5 select-text shadow-inner">
+        <div class="text-slate-500 text-[11px] pb-2 border-b border-slate-800">
+          ⚡ JARVIS macOS Interactive Shell v2.4 — Connecté à MacBook Pro (zsh)<br>
+          Tapez vos commandes shell ou utilisez les raccourcis tactiles ci-dessous.
+        </div>
+      </div>
+
+      <!-- Quick Command Chips for iPhone Touch -->
+      <div class="py-2 flex items-center gap-1.5 overflow-x-auto text-[11px] font-mono no-scrollbar">
+        <button onclick="runQuickCommand('ls -la')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">ls -la</button>
+        <button onclick="runQuickCommand('git status')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">git status</button>
+        <button onclick="runQuickCommand('top -l 1 | head -n 12')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">top (CPU/RAM)</button>
+        <button onclick="runQuickCommand('uptime && df -h /')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">uptime / disque</button>
+        <button onclick="runQuickCommand('ps aux | grep -i jarvis')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">process jarvis</button>
+        <button onclick="runQuickCommand('brew list --versions | head -n 10')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 hover:bg-emerald-900/60 whitespace-nowrap transition-all">brew</button>
+      </div>
+
+      <!-- Terminal Input Form -->
+      <form onsubmit="handleTerminalSubmit(event)" class="pt-2 border-t border-emerald-500/20 flex items-center gap-2">
+        <span class="text-emerald-400 font-mono text-xs font-bold pl-1">$</span>
+        <input
+          type="text"
+          id="terminalInput"
+          placeholder="Entrez une commande (ex: ls, cd jarvis, python3 ...)"
+          class="flex-1 bg-slate-900/90 border border-emerald-500/30 rounded-xl px-3 py-2.5 text-xs text-emerald-200 font-mono focus:outline-none focus:border-emerald-400 placeholder-slate-600"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+        />
+        <button
+          type="submit"
+          id="terminalSubmitBtn"
+          class="px-4 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 border border-emerald-500/40 font-mono font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap"
+        >
+          Exécuter
+        </button>
+      </form>
     </div>
   </div>
 
@@ -1000,12 +1067,136 @@
     }
 
     // ============================================================
+    // Terminal Cyber macOS Interactif (TTY Shell)
+    // ============================================================
+    let currentTerminalCwd = "~";
+    let terminalHistory = [];
+    let terminalHistoryIndex = -1;
+
+    function toggleTerminalModal() {
+      const modal = document.getElementById('terminalModal');
+      const isHidden = modal.classList.toggle('hidden');
+      if (!isHidden) {
+        playSciFiChime('select');
+        setTimeout(() => {
+          const inp = document.getElementById('terminalInput');
+          if (inp) inp.focus();
+        }, 200);
+      }
+    }
+
+    function clearTerminalOutput() {
+      const out = document.getElementById('terminalOutput');
+      out.innerHTML = `<div class="text-slate-500 text-[11px] pb-2 border-b border-slate-800">⚡ Console réinitialisée.</div>`;
+    }
+
+    function runQuickCommand(cmd) {
+      const input = document.getElementById('terminalInput');
+      input.value = cmd;
+      executeTerminalCommand(cmd);
+    }
+
+    async function handleTerminalSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('terminalInput');
+      const cmd = input.value.trim();
+      if (!cmd) return;
+      input.value = '';
+      await executeTerminalCommand(cmd);
+    }
+
+    async function executeTerminalCommand(cmd) {
+      const outputEl = document.getElementById('terminalOutput');
+      const submitBtn = document.getElementById('terminalSubmitBtn');
+      const badge = document.getElementById('terminalCwdBadge');
+
+      terminalHistory.push(cmd);
+      terminalHistoryIndex = terminalHistory.length;
+
+      // Affichage de la commande utilisateur
+      const cmdDiv = document.createElement('div');
+      cmdDiv.className = "text-emerald-400 font-bold flex items-start gap-1 pt-1.5";
+      cmdDiv.innerHTML = `<span class="text-emerald-500 select-none">$</span> <span>${escapeHtml(cmd)}</span>`;
+      outputEl.appendChild(cmdDiv);
+
+      // Indicateur d'exécution en cours
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = "text-slate-500 text-[11px] animate-pulse";
+      loadingDiv.textContent = "⚡ Exécution sur le Mac en cours...";
+      outputEl.appendChild(loadingDiv);
+      outputEl.scrollTop = outputEl.scrollHeight;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "⏳ ...";
+
+      const bridgeUrl = cleanBridgeUrl(config.macBridgeUrl) || 'http://localhost:8888';
+
+      try {
+        const res = await fetch(`${bridgeUrl}/api/terminal`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            command: cmd,
+            cwd: currentTerminalCwd
+          })
+        });
+
+        loadingDiv.remove();
+
+        if (res.ok) {
+          const data = await res.json();
+          currentTerminalCwd = data.cwd || currentTerminalCwd;
+          badge.textContent = currentTerminalCwd.replace(/^\/Users\/[^\/]+/, '~');
+
+          const resDiv = document.createElement('div');
+          if (data.returncode === 0) {
+            resDiv.className = "text-cyan-200 whitespace-pre-wrap font-mono text-[11px] pl-2 border-l border-emerald-500/40 bg-emerald-950/10 py-0.5 rounded";
+            resDiv.textContent = data.output || "✓ (Succès sans sortie texte)";
+          } else {
+            resDiv.className = "text-rose-300 whitespace-pre-wrap font-mono text-[11px] pl-2 border-l border-rose-500/50 bg-rose-950/10 py-0.5 rounded";
+            resDiv.textContent = data.output || `✗ Code retour : ${data.returncode}`;
+          }
+          outputEl.appendChild(resDiv);
+        } else {
+          const errDiv = document.createElement('div');
+          errDiv.className = "text-rose-400 text-xs pl-2 border-l border-rose-500";
+          errDiv.textContent = `Erreur HTTP ${res.status} lors de l'exécution.`;
+          outputEl.appendChild(errDiv);
+        }
+      } catch (err) {
+        loadingDiv.remove();
+        const errDiv = document.createElement('div');
+        errDiv.className = "text-rose-400 text-xs pl-2 border-l border-rose-500";
+        errDiv.textContent = "Erreur de transmission : le tunnel ou le Mac ne répond pas.";
+        outputEl.appendChild(errDiv);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Exécuter";
+        outputEl.scrollTop = outputEl.scrollHeight;
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ============================================================
     // Communication & Routage Hybride (Mac Direct + Z.ai Cloud)
     // ============================================================
     let chatHistory = [];
 
     async function sendCommand(text) {
       if (!text || isProcessing) return;
+
+      const lower = text.toLowerCase();
+      if (lower.startsWith("terminal:") || lower.startsWith("sh:") || lower.startsWith("exec:")) {
+        const cmd = text.replace(/^(terminal:|sh:|exec:)\s*/i, '').trim();
+        toggleTerminalModal();
+        await executeTerminalCommand(cmd);
+        return;
+      }
       isProcessing = true;
       playSciFiChime('process');
 
