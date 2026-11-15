@@ -52,7 +52,13 @@ export default async function handler(req, res) {
                           qLower.includes('terminal') || qLower.includes('ecran') || qLower.includes('écran') ||
                           qLower.includes('planning') || qLower.includes('agenda') || qLower.includes('reunion') || qLower.includes('réunion') ||
                           qLower.includes('legifrance') || qLower.includes('légifrance') || qLower.includes('loi') || qLower.includes('cgfp') || qLower.includes('jurisprudence');
-    if (isLocalAction && MAC_TUNNEL_FALLBACK) {
+    if (isLocalAction) {
+      if (!MAC_TUNNEL_FALLBACK) {
+        return res.status(200).json({
+          reply: "Monsieur, cette action nécessite le pont vers votre Mac, mais l'URL du tunnel Cloudflare n'est pas configurée (variable d'environnement MAC_BRIDGE_URL). Démarrez le daemon JARVIS sur le Mac, puis mettez à jour l'URL du tunnel.",
+          action: "mac_unreachable"
+        });
+      }
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 6000);
@@ -69,8 +75,16 @@ export default async function handler(req, res) {
             return res.status(200).json(macData);
           }
         }
+        return res.status(200).json({
+          reply: `Monsieur, le Mac a répondu avec une erreur (code ${macResp.status}). Je préfère vous l'indiquer plutôt que d'inventer une réponse : vérifiez que le serveur JARVIS local tourne bien sur le port 8888.`,
+          action: "mac_unreachable"
+        });
       } catch (tunnelErr) {
         console.warn("[Vercel -> Mac Tunnel] Impossible de joindre le Mac :", tunnelErr.message);
+        return res.status(200).json({
+          reply: "Monsieur, je ne parviens pas à joindre votre Mac via le tunnel Cloudflare (tunnel arrêté ou délai dépassé). Je préfère vous l'indiquer franchement plutôt que d'inventer un planning ou des e-mails. Relancez le daemon JARVIS sur le Mac pour rétablir le pont.",
+          action: "mac_unreachable"
+        });
       }
     }
 
