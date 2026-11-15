@@ -21,6 +21,7 @@ Ses communications professionnelles réelles concernent la mairie de Gennevillie
 Ne génère jamais d'e-mails fictifs ou inventés.`;
 
 const MAC_TUNNEL_FALLBACK = process.env.MAC_BRIDGE_URL || 'https://steam-plans-manager-boost.trycloudflare.com';
+const MAC_BRIDGE_TOKEN = process.env.MAC_BRIDGE_TOKEN || '';
 
 export default async function handler(req, res) {
   // Gestion CORS
@@ -64,7 +65,10 @@ export default async function handler(req, res) {
         const timeout = setTimeout(() => controller.abort(), 6000);
         const macResp = await fetch(`${MAC_TUNNEL_FALLBACK}/api/chat`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: Object.assign(
+            { 'Content-Type': 'application/json' },
+            MAC_BRIDGE_TOKEN ? { 'Authorization': `Bearer ${MAC_BRIDGE_TOKEN}` } : {}
+          ),
           body: JSON.stringify({ query: query }),
           signal: controller.signal
         });
