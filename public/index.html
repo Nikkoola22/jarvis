@@ -1241,37 +1241,39 @@ void main(){
     }
 
     async function checkMacBridge() {
-      let bridgeUrl = cleanBridgeUrl(config.macBridgeUrl) || 'http://localhost:8888';
-      const tunnelFallback = 'https://steam-plans-manager-boost.trycloudflare.com';
+      // Appels directs au Mac uniquement si la page a été servie PAR le Mac (jeton injecté).
+      // Depuis le site Vercel, on passe toujours par le backend du site (qui porte le jeton).
+      const directMac = !!window.JARVIS_TOKEN;
+      const bridgeUrl = (window.JARVIS_TOKEN && cleanBridgeUrl(config.macBridgeUrl)) || 'http://localhost:8888';
 
-      // 1. Essai sur le bridgeUrl configuré
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 2500);
-        const r = await fetch(`${bridgeUrl}/api/telemetry`, { signal: controller.signal });
-        clearTimeout(timeout);
-        if (r.ok) {
-          const data = await r.json();
-          setMacLinkStatus(true, data);
-          return data;
-        }
-      } catch (err) {}
-
-      // 2. Fallback automatique vers le tunnel Cloudflare mondial si localhost est injoignable (ex: sur iPhone)
-      if (bridgeUrl !== tunnelFallback) {
+      if (directMac) {
+        // 1. Essai direct sur le Mac local (page servie par le Mac, jeton disponible)
         try {
-          const controller2 = new AbortController();
-          const timeout2 = setTimeout(() => controller2.abort(), 3500);
-          const r2 = await fetch(`${tunnelFallback}/api/telemetry`, { signal: controller2.signal });
-          clearTimeout(timeout2);
-          if (r2.ok) {
-            const data2 = await r2.json();
-            config.macBridgeUrl = tunnelFallback;
-            setMacLinkStatus(true, data2);
-            return data2;
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 2500);
+          const r = await fetch(`${bridgeUrl}/api/telemetry`, { signal: controller.signal });
+          clearTimeout(timeout);
+          if (r.ok) {
+            const data = await r.json();
+            config.macBridgeUrl = bridgeUrl;
+            setMacLinkStatus(true, data);
+            return data;
           }
-        } catch (e2) {}
+        } catch (err) {}
+        setMacLinkStatus(false);
+        return null;
       }
+
+      // 2. Depuis le site Vercel : statut cloud via le backend du site (jamais d'appel direct au tunnel)
+      try {
+        const controller2 = new AbortController();
+        const timeout2 = setTimeout(() => controller2.abort(), 3500);
+        const r2 = await fetch('/api/telemetry', { signal: controller2.signal });
+        clearTimeout(timeout2);
+        if (r2.ok) {
+          return await r2.json();
+        }
+      } catch (e2) {}
 
       setMacLinkStatus(false);
       return null;
@@ -1571,12 +1573,11 @@ void main(){
       let reply = "";
       let handledByMac = false;
 
-      // 1. Tenter l'exécution locale sur le Mac via bridgeUrl ou tunnel Cloudflare
-      if (config.routeToMac) {
+      // 1. Tenter l'exécution locale sur le Mac — uniquement si la page est servie par le Mac
+      //    (sinon le backend du site gère le routage tunnel, avec le jeton)
+      if (config.routeToMac && window.JARVIS_TOKEN) {
         const configuredUrl = (cleanBridgeUrl(config.macBridgeUrl) || 'http://localhost:8888').replace(/\/$/, '');
-        const tunnelFallback = 'https://steam-plans-manager-boost.trycloudflare.com';
         const urlsToTry = [configuredUrl];
-        if (configuredUrl !== tunnelFallback) urlsToTry.push(tunnelFallback);
 
         for (const bUrl of urlsToTry) {
           try {
@@ -1759,6 +1760,20 @@ void main(){
         toggleMicrophone();
       }
     });
+
+    // Statut du cloud — silencieux si injoignable
+    async function updateCloudTelemetry() {
+      try {
+        const r = await fetch('/api/telemetry', { signal: AbortSignal.timeout(4000) });
+        if (r.ok) {
+          const d = await r.json();
+          const badge = document.getElementById('badgeMacLink');
+          if (badge && d && d.status) {
+            badge.title += `\nCloud: ${d.status} (${d.region || 'cloud'})`;
+          }
+        }
+      } catch (e) { /* cloud injoignable : sans effet */ }
+    }
 
     // Initialisation
     loadConfig();
